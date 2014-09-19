@@ -1,0 +1,26 @@
+{
+  "name": "mml-optimizer",
+  "version": "0.0.0",
+  "description": "Optimizer for Music Markup Language (MML)",
+  "main": "index.js",
+  "scripts": {
+    "test": "mocha --reporter spec test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/smrq/mml-optimizer"
+  },
+  "author": "Greg Smith",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/smrq/mml-optimizer/issues"
+  },
+  "homepage": "https://github.com/smrq/mml-optimizer",
+  "devDependencies": {
+    "mocha": "^1.21.4",
+    "simple-fmt": "^0.1.0"
+  },
+  "dependencies": {
+    "a-star": "^0.2.0"
+  }
+}
