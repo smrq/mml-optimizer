@@ -3,6 +3,7 @@
   "version": "0.0.0",
   "description": "Optimizer for Music Markup Language (MML)",
   "main": "index.js",
+  "bin": "./cli.js",
   "scripts": {
     "test": "mocha --reporter spec test"
   },
@@ -21,6 +22,7 @@
     "simple-fmt": "^0.1.0"
   },
   "dependencies": {
-    "a-star": "^0.2.0"
+    "a-star": "^0.2.0",
+    "commander": "^2.3.0"
   }
 }
