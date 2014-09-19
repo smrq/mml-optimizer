@@ -2,10 +2,9 @@
 
 Optimizer for [Music Macro Language (MML)](http://en.wikipedia.org/wiki/Music_Macro_Language)
 
+[![NPM version](https://badge.fury.io/js/mml-optimizer.png)](http://badge.fury.io/js/mml-optimizer)
 [![build status](https://secure.travis-ci.org/smrq/mml-optimizer.png)](http://travis-ci.org/smrq/mml-optimizer)
 [![Dependency status](https://david-dm.org/smrq/mml-optimizer.png)](https://david-dm.org/smrq/mml-optimizer) [![devDependency Status](https://david-dm.org/smrq/mml-optimizer/dev-status.png)](https://david-dm.org/smrq/mml-optimizer#info=devDependencies)
-
-
 
 # example usage
 
