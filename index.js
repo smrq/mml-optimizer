@@ -1,25 +1,25 @@
 var aStar = require('a-star');
 var extend = require('extend');
 
-var initialOctave = 4;
-var initialTempo = 120;
+var initialOctave = 5;
+var initialTempo = 100;
 var initialVolume = 100;
 var initialDuration = '4';
-var tpqn = 96;
+var tpqn = 500;
 
 var defaultState = {
-	octave: 4,
-	tempo: 120,
+	octave: 5,
+	tempo: 100,
 	volume: 100,
 	ticks: tpqn,
 	duration: '4'
 };
 
 function noteDurationToTicks(duration) {
-	var dotted = duration.indexOf('.') !== -1;
+	var dots = /[^.]*([.]*)/.exec(duration)[1].length;
 	var noteFraction = parseInt(duration, 10);
 	var ticks = Math.floor((tpqn * 4) / noteFraction);
-	if (dotted)
+	for (var i = 0; i < dots; ++i)
 		ticks = Math.floor(ticks * 1.5);
 	return ticks;
 }
@@ -29,11 +29,21 @@ var ticksToNoteDuration = (function () {
 	for (var i = 64; i > 0; --i) {
 		var iStr = String(i);
 		var iStrDotted = iStr + '.';
+		var iStrDotted2 = iStr + '..';
+		var iStrDotted3 = iStr + '...';
 
-		var dotted = noteDurationToTicks(iStrDotted);
 		var regular = noteDurationToTicks(iStr);
+		var dotted = noteDurationToTicks(iStrDotted);
+		var dotted2 = noteDurationToTicks(iStrDotted2);
+		var dotted3 = noteDurationToTicks(iStrDotted3);
 
-		if (!memo[dotted])
+		if (!memo[dotted3])
+			memo[dotted3] = iStrDotted3;
+
+		if (!memo[dotted2] || memo[dotted2].length > iStrDotted2.length)
+			memo[dotted2] = iStrDotted2;
+
+		if (!memo[dotted] || memo[dotted].length > iStrDotted.length)
 			memo[dotted] = iStrDotted;
 
 		if (!memo[regular] || memo[regular].length > iStr.length)
@@ -51,16 +61,13 @@ function parseMml(mmlString) {
 		var tokenLength;
 		if (result = /^\/\*[^]*?\*\//.exec(mmlString)) {
 			tokenLength = result[0].length;
-		} else if (result = /^([A-Ga-g][+#-]?)([0-9]*[.]?)/.exec(mmlString)) {
+		} else if (result = /^([A-Ga-g][+#-]?)([0-9]*[.]*)/.exec(mmlString)) {
 			var pitch = result[1].toLowerCase().replace(/#/g,'+');
 			var duration = result[2];
 			if (!duration)
 				duration = state.duration;
-			else if (duration === '.') {
-				duration = state.duration;
-				if (duration.indexOf('.') !== -1) {
-					duration += '.';
-				}
+			else if (/^[.]+$/.test(duration)) {
+				duration = state.duration + duration;
 			}
 			tokens.push({
 				type: 'note',
@@ -70,7 +77,7 @@ function parseMml(mmlString) {
 				volume: state.volume
 			});
 			tokenLength = result[0].length;
-		} else if (result = /^[Ll]([0-9]+[.]?)/.exec(mmlString)) {
+		} else if (result = /^[Ll]([0-9]+[.]*)/.exec(mmlString)) {
 			state.duration = result[1];
 			tokenLength = result[0].length;
 		} else if (result = /^[Oo]([0-9]+)/.exec(mmlString)) {
