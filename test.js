@@ -6,7 +6,7 @@ function runCases(text, fn, cases) {
 	cases.forEach(function (testCase) {
 		var input = testCase[0], output = testCase[1];
 		it(fmt(text, input, output), function () {
-			assert.deepEqual(output, fn(input));
+			assert.deepEqual(fn(input), output);
 		});
 	});
 }
@@ -168,6 +168,11 @@ describe('mml-optimizer', function () {
 		['c8c8c8c4c8c8c8', 'L8cccc4ccc'],
 		['c8c8c4c8c8', 'L8ccc4cc'],
 		['c8c4c8c8', 'c8cc8c8'],
-		['c16c4c16c16', 'L16cc4cc']
+		['c16c4c16c16', 'L16cc4cc'],
+		//['c4c4.c4c4.', 'cc.cc.'],
+		//['c4c4.c4.c4.c4', 'cc.c.c.c'],
+		['c4c4.c4.c4.c4.', 'cL4.cccc'],
+		//['L24ccccccL16cc', 'L24ccccccc.c.'],
+		//['b>c<b>d', 'bb+b>d'], // or b>cc-d
 	]);
 });

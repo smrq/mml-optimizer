@@ -1,4 +1,5 @@
 var aStar = require('a-star');
+var extend = require('extend');
 
 var initialOctave = 4;
 var initialTempo = 120;
@@ -6,9 +7,17 @@ var initialVolume = 100;
 var initialDuration = '4';
 var tpqn = 96;
 
-function noteDurationToTicks(noteDuration) {
-	var dotted = noteDuration.indexOf('.') !== -1;
-	var noteFraction = parseInt(noteDuration, 10);
+var defaultState = {
+	octave: 4,
+	tempo: 120,
+	volume: 100,
+	ticks: tpqn,
+	duration: '4'
+};
+
+function noteDurationToTicks(duration) {
+	var dotted = duration.indexOf('.') !== -1;
+	var noteFraction = parseInt(duration, 10);
 	var ticks = Math.floor((tpqn * 4) / noteFraction);
 	if (dotted)
 		ticks = Math.floor(ticks * 1.5);
@@ -34,83 +43,78 @@ var ticksToNoteDuration = (function () {
 })();
 
 function parseMml(mmlString) {
-	var octave = initialOctave;
-	var duration = initialDuration;
-	var tempo = initialTempo;
-	var volume = initialVolume;
+	var state = extend({}, defaultState);
 	var tokens = [];
 
 	while (mmlString.length) {
 		var result;
+		var tokenLength;
 		if (result = /^\/\*[^]*?\*\//.exec(mmlString)) {
-			mmlString = mmlString.slice(result[0].length);
+			tokenLength = result[0].length;
 		} else if (result = /^([A-Ga-g][+#-]?)([0-9]*[.]?)/.exec(mmlString)) {
-			var noteDuration = result[2];
-			if (!noteDuration)
-				noteDuration = duration;
-			else if (noteDuration === '.') {
-				noteDuration = duration;
-				if (noteDuration.indexOf('.') !== -1) {
-					noteDuration += '.';
+			var pitch = result[1].toLowerCase().replace(/#/g,'+');
+			var duration = result[2];
+			if (!duration)
+				duration = state.duration;
+			else if (duration === '.') {
+				duration = state.duration;
+				if (duration.indexOf('.') !== -1) {
+					duration += '.';
 				}
 			}
 			tokens.push({
 				type: 'note',
-				pitch: result[1].toLowerCase().replace(/#/g,'+'),
-				octave: octave,
-				ticks: noteDurationToTicks(noteDuration),
-				volume: volume
+				pitch: pitch,
+				octave: state.octave,
+				ticks: noteDurationToTicks(duration),
+				volume: state.volume
 			});
-			mmlString = mmlString.slice(result[0].length);
+			tokenLength = result[0].length;
 		} else if (result = /^[Ll]([0-9]+[.]?)/.exec(mmlString)) {
-			duration = result[1];
-			mmlString = mmlString.slice(result[0].length);
+			state.duration = result[1];
+			tokenLength = result[0].length;
 		} else if (result = /^[Oo]([0-9]+)/.exec(mmlString)) {
-			octave = result[1];
-			tokens.push({
-				type: 'octave',
-				octave: parseInt(result[1], 10)
-			});
-			mmlString = mmlString.slice(result[0].length);
+			var octave = parseInt(result[1], 10);
+			state.octave = octave;
+			tokens.push({ type: 'octave', octave: octave });
+			tokenLength = result[0].length;
 		} else if (result = /^[Vv]([0-9]+)/.exec(mmlString)) {
-			volume = result[1];
-			tokens.push({
-				type: 'volume',
-				volume: parseInt(result[1], 10)
-			});
-			mmlString = mmlString.slice(result[0].length);
+			var volume = parseInt(result[1], 10);
+			state.volume = volume;
+			tokens.push({ type: 'volume', volume: volume });
+			tokenLength = result[0].length;
 		} else if (result = /^[Tt]([0-9]+)/.exec(mmlString)) {
-			tempo = result[1];
-			tokens.push({
-				type: 'tempo',
-				tempo: parseInt(result[1], 10)
-			});
-			mmlString = mmlString.slice(result[0].length);
+			var tempo = parseInt(result[1], 10);
+			state.tempo = tempo;
+			tokens.push({ type: 'tempo', tempo: tempo });
+			tokenLength = result[0].length;
 		} else if (mmlString[0] === '&') {
 			tokens.push({ type: 'tie' });
-			mmlString = mmlString.slice(1);
+			tokenLength = 1;
 		} else if (mmlString[0] === '<') {
-			--octave;
+			--state.octave;
 			tokens.push({ type: 'octaveDown' });
-			mmlString = mmlString.slice(1);
+			tokenLength = 1;
 		} else if (mmlString[0] === '>') {
-			++octave;
+			++state.octave;
 			tokens.push({ type: 'octaveUp' });
-			mmlString = mmlString.slice(1);
+			tokenLength = 1;
 		} else if (mmlString[0] === ',') {
 			tokens.push({ type: 'nextVoice' });
-			mmlString = mmlString.slice(1);
+			tokenLength = 1;
 		} else {
-			mmlString = mmlString.slice(1);
+			tokenLength = 1;
 		}
+
+		mmlString = mmlString.slice(tokenLength);
 	}
 
 	return tokens;
 }
 
-function tokenText(token, currentTicks) {
+function tokenText(token, state) {
 	switch (token.type) {
-		case 'note': return noteText(token.pitch, token.ticks, currentTicks);
+		case 'note': return noteText(token.pitch, token.ticks, state.ticks);
 		case 'duration': return durationText(token.ticks);
 		case 'octave': return octaveText(token.octave);
 		case 'volume': return volumeText(token.volume);
@@ -146,6 +150,28 @@ function tempoText(tempo) {
 	return 'T' + tempo;
 }
 
+function tokenNeighbors(token, state) {
+	var neighbors = [];
+	switch (token.type) {
+		case 'note':
+			neighbors.push(extend({}, state, { cursor: state.cursor + 1 }));
+			if (token.ticks !== state.ticks) {
+				neighbors.push(extend({}, state, { ticks: token.ticks }));
+			}
+			break;
+		case 'octave':
+		case 'volume':
+		case 'tempo':
+		case 'tie':
+		case 'octaveDown':
+		case 'octaveUp':
+		case 'nextVoice':
+			neighbors.push(extend({}, state, { cursor: state.cursor + 1 }));
+			break;	
+	}
+	return neighbors;
+}
+
 function optimizeDurationChanges(mmlTokens) {
 	var result = aStar({
 		start: { ticks: tpqn, cursor: 0 },
@@ -153,22 +179,11 @@ function optimizeDurationChanges(mmlTokens) {
 			return node.cursor === mmlTokens.length;
 		},
 		neighbor: function (node) {
-			var token = mmlTokens[node.cursor];
-			var neighbors = [{
-				ticks: node.ticks,
-				cursor: node.cursor + 1
-			}];
-			if (token.type === 'note' && token.ticks !== node.ticks) {
-				neighbors.push({
-					ticks: token.ticks,
-					cursor: node.cursor
-				});
-			}
-			return neighbors;
+			return tokenNeighbors(mmlTokens[node.cursor], node);
 		},
 		distance: function (nodeA, nodeB) {
 			if (nodeA.cursor !== nodeB.cursor)
-				return tokenText(mmlTokens[nodeA.cursor], nodeA.ticks).length;
+				return tokenText(mmlTokens[nodeA.cursor], nodeA).length;
 			if (nodeA.ticks !== nodeB.ticks)
 				return durationText(nodeB.ticks).length;
 			throw new Error('Unexpected node transition.');
@@ -199,7 +214,7 @@ function optimizeDurationChanges(mmlTokens) {
 function generateMml(tokens) {
 	return tokens.reduce(function (acc, token) {
 		return {
-			text: acc.text + tokenText(token, acc.ticks),
+			text: acc.text + tokenText(token, acc),
 			ticks: token.type === 'duration' ? token.ticks : acc.ticks
 		};
 	}, { text: '', ticks: tpqn }).text;
