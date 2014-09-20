@@ -136,9 +136,16 @@ function tokenText(token, state) {
 
 function noteText(pitch, ticks, currentTicks) {
 	var text = pitch;
-	if (ticks !== currentTicks)
-		text += ticksToNoteDuration(ticks);
-	return text;
+	for (
+		var dottedCurrentTicks = currentTicks, dots = '';
+		dottedCurrentTicks <= ticks;
+		dottedCurrentTicks = Math.floor(dottedCurrentTicks * 1.5), dots += '.'
+	) {
+		if (dottedCurrentTicks === ticks)
+			return text + dots;
+	}
+	
+	return text + ticksToNoteDuration(ticks);
 }
 
 function durationText(ticks) {
