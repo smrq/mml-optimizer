@@ -47,6 +47,34 @@ describe('ticksToNoteDuration', function () {
 		[31, '64'],
 		[46, '43']
 	]);
+
+	it('should convert ticks to duration and back', function () {
+		for (var i = 1; i <= 64; ++i) {
+			var ticks;
+			
+			ticks = opt.noteDurationToTicks(i + '');
+			assert.equal(opt.noteDurationToTicks(opt.ticksToNoteDuration(ticks)), ticks, 'Testing ' + i);
+
+			ticks = opt.noteDurationToTicks(i + '.');
+			assert.equal(opt.noteDurationToTicks(opt.ticksToNoteDuration(ticks)), ticks, 'Testing ' + i + '.');
+
+			ticks = opt.noteDurationToTicks(i + '..');
+			assert.equal(opt.noteDurationToTicks(opt.ticksToNoteDuration(ticks)), ticks, 'Testing ' + i + '..');
+		}
+	});
+});
+
+describe('ticksToAllNoteDurations', function () {
+	runCases('should convert {0} to {1}', opt.ticksToAllNoteDurations, [
+		[2000, ['1']],
+		[3000, ['1.']],
+		[4500, ['1..']],
+		[6750, ['1...']],
+		[333, ['6', '9.', '30....', '45.....']],
+		[166, ['12', '18.', '27..']],
+		[111, ['18', '27.']],
+		[61, ['48.']]
+	]);
 });
 
 describe('parseMml', function () {
@@ -207,6 +235,7 @@ describe('mml-optimizer', function () {
 		['c4c4...c4c4...c4', 'cc...cc...c'],
 		['c4.c4..c4.c4..c4.', 'L4.cc.cc.c'],
 		['c4..c4...c4..c4...c4..', 'L4..cc.cc.c'],
+		['c30c30c30c30c30...','L30ccccc9'],
 		//['c16.c16c16.c16c16.c16c16.c16', 'L16c.cc.cc.cc.c'],
 		//['L24ccccccL16cc', 'L24ccccccc.c.'],
 		//['c64c43c64c43', 'L64cc.cc.'],

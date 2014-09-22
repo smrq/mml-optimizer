@@ -6,6 +6,8 @@ var initialTempo = 100;
 var initialVolume = 100;
 var initialDuration = '4';
 var tpqn = 500;
+var minimumNoteDuration = 64;
+var minimumNoteTicks = noteDurationAndDotsToTicks(minimumNoteDuration, 0);
 
 var defaultState = {
 	octave: 5,
@@ -16,41 +18,58 @@ var defaultState = {
 };
 
 function noteDurationToTicks(duration) {
-	var dots = /[^.]*([.]*)/.exec(duration)[1].length;
-	var noteFraction = parseInt(duration, 10);
-	var ticks = Math.floor((tpqn * 4) / noteFraction);
+	return noteDurationAndDotsToTicks(
+		parseInt(duration, 10),
+		/[^.]*([.]*)/.exec(duration)[1].length);
+}
+
+function noteDurationAndDotsToTicks(duration, dots) {
+	var ticks = Math.floor(tpqn * 4 / duration);
 	for (var i = 0; i < dots; ++i)
 		ticks = Math.floor(ticks * 1.5);
 	return ticks;
 }
 
-var ticksToNoteDuration = (function () {
-	var memo = {};
-	for (var i = 64; i > 0; --i) {
-		var iStr = String(i);
-		var iStrDotted = iStr + '.';
-		var iStrDotted2 = iStr + '..';
-		var iStrDotted3 = iStr + '...';
+function ticksToNoteDuration(ticks) {
+	var dots = '';
+	var upperBoundIncl;
+	var lowerBoundExcl;
 
-		var regular = noteDurationToTicks(iStr);
-		var dotted = noteDurationToTicks(iStrDotted);
-		var dotted2 = noteDurationToTicks(iStrDotted2);
-		var dotted3 = noteDurationToTicks(iStrDotted3);
+	do {
+		// Bounds for the preimage of floor(1.5*floor(1.5*...floor(4*tpqn/ticks)))
+		upperBoundIncl = Math.pow(1.5,dots.length)*4*tpqn / ticks;
+		lowerBoundExcl = Math.pow(1.5,dots.length)*4*tpqn / (ticks + 3*Math.pow(1.5,dots.length) - 2);
+		for (var n = Math.floor(upperBoundIncl); n > lowerBoundExcl; --n) {
+			if (noteDurationAndDotsToTicks(n, dots.length) === ticks)
+				return n + dots;
+		}
+		dots += '.';
+	} while (lowerBoundExcl < minimumNoteDuration);
 
-		if (!memo[dotted3])
-			memo[dotted3] = iStrDotted3;
+	return null;
+}
 
-		if (!memo[dotted2] || memo[dotted2].length > iStrDotted2.length)
-			memo[dotted2] = iStrDotted2;
+function ticksToAllNoteDurations(ticks) {
+	var dots = '';
+	var upperBoundIncl;
+	var lowerBoundExcl;
+	var result = [];
 
-		if (!memo[dotted] || memo[dotted].length > iStrDotted.length)
-			memo[dotted] = iStrDotted;
+	do {
+		// Bounds for the preimage of floor(1.5*floor(1.5*...floor(4*tpqn/ticks)))
+		upperBoundIncl = Math.pow(1.5,dots.length)*4*tpqn / ticks;
+		lowerBoundExcl = Math.pow(1.5,dots.length)*4*tpqn / (ticks + 3*Math.pow(1.5,dots.length) - 2);
+		for (var n = Math.floor(upperBoundIncl); n > lowerBoundExcl; --n) {
+			if (noteDurationAndDotsToTicks(n, dots.length) === ticks) {
+				result.push(n + dots);
+				break;
+			}
+		}
+		dots += '.';
+	} while (lowerBoundExcl < minimumNoteDuration);
 
-		if (!memo[regular] || memo[regular].length > iStr.length)
-			memo[regular] = iStr;
-	}
-	return function (ticks) { return memo[ticks]; };
-})();
+	return result;
+}
 
 function parseMml(mmlString) {
 	var state = extend({}, defaultState);
@@ -136,16 +155,17 @@ function tokenText(token, state) {
 
 function noteText(pitch, ticks, currentTicks) {
 	var text = pitch;
+	var duration = ticksToNoteDuration(ticks);
 	for (
 		var dottedCurrentTicks = currentTicks, dots = '';
 		dottedCurrentTicks <= ticks;
 		dottedCurrentTicks = Math.floor(dottedCurrentTicks * 1.5), dots += '.'
 	) {
 		if (dottedCurrentTicks === ticks)
-			return text + dots;
+			return text + (dots.length < duration.length ? dots : duration);
 	}
 	
-	return text + ticksToNoteDuration(ticks);
+	return text + duration;
 }
 
 function durationText(ticks) {
@@ -251,6 +271,7 @@ module.exports = function opt(input) {
 
 module.exports.noteDurationToTicks = noteDurationToTicks;
 module.exports.ticksToNoteDuration = ticksToNoteDuration;
+module.exports.ticksToAllNoteDurations = ticksToAllNoteDurations;
 module.exports.parseMml = parseMml;
 module.exports.optimizeDurationChanges = optimizeDurationChanges;
 module.exports.generateMml = generateMml;
