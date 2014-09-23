@@ -108,11 +108,31 @@ function pitchToMidiNote(note, octave) {
 
 function validOctaves(midi) {
 	var octave = Math.floor(midi / 12);
-	if (midi % 12 === 0)
+	if (midi % 12 === 0 && octave > 0)
 		return [octave - 1, octave];
 	if (midi % 12 === 11)
 		return [octave, octave + 1];
 	return [octave];
+}
+
+function relativePitch(midi, octave) {
+	var pitchMap = {
+		'-1': 'c-',
+		'0': 'c',
+		'1': 'c+',
+		'2': 'd',
+		'3': 'd+',
+		'4': 'e',
+		'5': 'f',
+		'6': 'f+',
+		'7': 'g',
+		'8': 'g+',
+		'9': 'a',
+		'10': 'a+',
+		'11': 'b',
+		'12': 'b+'
+	};
+	return pitchMap[midi - (octave * 12)];
 }
 
 function parseMml(mmlString) {
@@ -134,9 +154,7 @@ function parseMml(mmlString) {
 			}
 			tokens.push({
 				type: 'note',
-				pitch: pitch,
 				midi: pitchToMidiNote(pitch, state.octave),
-				octave: state.octave,
 				ticks: noteDurationToTicks(duration),
 				volume: state.volume
 			});
@@ -185,7 +203,7 @@ function parseMml(mmlString) {
 
 function tokenText(token, state) {
 	switch (token.type) {
-		case 'note': return noteText(token.pitch, token.ticks, state.duration);
+		case 'note': return noteText(token.midi, token.ticks, state.octave, state.duration);
 		case 'duration': return durationText(token.duration);
 		case 'octave': return octaveText(token.octave);
 		case 'volume': return volumeText(token.volume);
@@ -198,8 +216,8 @@ function tokenText(token, state) {
 	throw new Error('Unexpected token type.');
 }
 
-function noteText(pitch, ticks, currentDuration) {
-	return pitch + relativeDuration(ticks, currentDuration);
+function noteText(midi, ticks, currentOctave, currentDuration) {
+	return relativePitch(midi, currentOctave) + relativeDuration(ticks, currentDuration);
 }
 
 function durationText(duration) {
@@ -296,10 +314,10 @@ function optimizeTokens(mmlTokens) {
 
 function generateMml(tokens) {
 	return tokens.reduce(function (acc, token) {
-		return {
+		return extend(acc, {
 			text: acc.text + tokenText(token, acc),
 			duration: token.type === 'duration' ? token.duration : acc.duration
-		};
+		});
 	}, extend({}, defaultState, { text: '' })).text;
 }
 
@@ -324,6 +342,7 @@ module.exports.ticksToAllNoteDurations = ticksToAllNoteDurations;
 module.exports.relativeDuration = relativeDuration;
 module.exports.pitchToMidiNote = pitchToMidiNote;
 module.exports.validOctaves = validOctaves;
+module.exports.relativePitch = relativePitch;
 module.exports.parseMml = parseMml;
 module.exports.runPathfinder = runPathfinder;
 module.exports.optimizeTokens = optimizeTokens;
