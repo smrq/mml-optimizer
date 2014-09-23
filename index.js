@@ -106,6 +106,15 @@ function pitchToMidiNote(note, octave) {
 	return 12*octave + midiMap[note[0]] + accidentalMap[note[1] || ''];
 }
 
+function validOctaves(midi) {
+	var octave = Math.floor(midi / 12);
+	if (midi % 12 === 0)
+		return [octave - 1, octave];
+	if (midi % 12 === 11)
+		return [octave, octave + 1];
+	return [octave];
+}
+
 function parseMml(mmlString) {
 	var state = extend({}, defaultState);
 	var tokens = [];
@@ -314,6 +323,7 @@ module.exports.ticksToNoteDuration = ticksToNoteDuration;
 module.exports.ticksToAllNoteDurations = ticksToAllNoteDurations;
 module.exports.relativeDuration = relativeDuration;
 module.exports.pitchToMidiNote = pitchToMidiNote;
+module.exports.validOctaves = validOctaves;
 module.exports.parseMml = parseMml;
 module.exports.runPathfinder = runPathfinder;
 module.exports.optimizeTokens = optimizeTokens;

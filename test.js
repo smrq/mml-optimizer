@@ -104,6 +104,14 @@ describe('pitchToMidiNote', function () {
 	]);
 });
 
+describe('validOctaves', function () {
+	runCases('should convert {0} to {1}', opt.validOctaves, [
+		[opt.pitchToMidiNote('g', 4), [4]],
+		[opt.pitchToMidiNote('c', 4), [3, 4]],
+		[opt.pitchToMidiNote('b', 4), [4, 5]]
+	]);
+});
+
 describe('parseMml', function () {
 	runCases('should parse {0}', opt.parseMml, [
 		['ccc', [
