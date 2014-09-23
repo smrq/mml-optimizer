@@ -5,8 +5,10 @@ var fmt = require('simple-fmt');
 function runCases(text, fn, cases) {
 	cases.forEach(function (testCase) {
 		var input = testCase[0], output = testCase[1];
+		if (!Array.isArray(input))
+			input = [input];
 		it(fmt(text, input, output), function () {
-			assert.deepEqual(fn(input), output);
+			assert.deepEqual(fn.apply(null, input), output);
 		});
 	});
 }
@@ -51,7 +53,7 @@ describe('ticksToNoteDuration', function () {
 	it('should convert ticks to duration and back', function () {
 		for (var i = 1; i <= 64; ++i) {
 			var ticks;
-			
+
 			ticks = opt.noteDurationToTicks(i + '');
 			assert.equal(opt.noteDurationToTicks(opt.ticksToNoteDuration(ticks)), ticks, 'Testing ' + i);
 
@@ -74,6 +76,21 @@ describe('ticksToAllNoteDurations', function () {
 		[166, ['12', '18.', '27..']],
 		[111, ['18', '27.']],
 		[61, ['48.']]
+	]);
+});
+
+describe('relativeDuration', function () {
+	runCases('should convert {0} to {1}', opt.relativeDuration, [
+		[[opt.noteDurationToTicks('4'), '1'], '4'],
+		[[opt.noteDurationToTicks('4'), '4'], ''],
+		[[opt.noteDurationToTicks('4'), '4.'], '4'],
+		[[opt.noteDurationToTicks('4.'), '4'], '.'],
+		[[opt.noteDurationToTicks('4..'), '4.'], '.'],
+		[[opt.noteDurationToTicks('4...'), '4.'], '..'],
+		[[opt.noteDurationToTicks('4....'), '4.'], '...'],
+		[[opt.noteDurationToTicks('12'), '12'], ''],
+		[[opt.noteDurationToTicks('12'), '18'], '.'],
+		[[opt.noteDurationToTicks('12'), '27'], '12'],
 	]);
 });
 
@@ -217,6 +234,27 @@ describe('parseMml', function () {
 			{ type: 'note', pitch: 'c', octave: 5, ticks: 500, volume: 100 },
 			{ type: 'note', pitch: 'c', octave: 5, ticks: 500, volume: 100 },
 			{ type: 'note', pitch: 'c', octave: 5, ticks: 500, volume: 100 }
+		]]
+	]);
+});
+
+describe('runPathfinder', function () {
+	runCases('should find a path given an input token set', opt.runPathfinder, [
+		[[opt.parseMml('cdef')], [
+			{ cursor: 0, octave: 5, tempo: 100, volume: 100, duration: '4' },
+			{ cursor: 1, octave: 5, tempo: 100, volume: 100, duration: '4' },
+			{ cursor: 2, octave: 5, tempo: 100, volume: 100, duration: '4' },
+			{ cursor: 3, octave: 5, tempo: 100, volume: 100, duration: '4' },
+			{ cursor: 4, octave: 5, tempo: 100, volume: 100, duration: '4' }
+		]],
+		[[opt.parseMml('c16d16e32f32')], [
+			{ cursor: 0, octave: 5, tempo: 100, volume: 100, duration: '4' },
+			{ cursor: 0, octave: 5, tempo: 100, volume: 100, duration: '16' },
+			{ cursor: 1, octave: 5, tempo: 100, volume: 100, duration: '16' },
+			{ cursor: 2, octave: 5, tempo: 100, volume: 100, duration: '16' },
+			{ cursor: 2, octave: 5, tempo: 100, volume: 100, duration: '32' },
+			{ cursor: 3, octave: 5, tempo: 100, volume: 100, duration: '32' },
+			{ cursor: 4, octave: 5, tempo: 100, volume: 100, duration: '32' }
 		]]
 	]);
 });

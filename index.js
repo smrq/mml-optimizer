@@ -13,7 +13,6 @@ var defaultState = {
 	octave: 5,
 	tempo: 100,
 	volume: 100,
-	ticks: tpqn,
 	duration: '4'
 };
 
@@ -69,6 +68,24 @@ function ticksToAllNoteDurations(ticks) {
 	} while (lowerBoundExcl < minimumNoteDuration);
 
 	return result;
+}
+
+function relativeDuration(ticks, durationRelativeTo) {
+	var candidates = [];
+	return ticksToAllNoteDurations(ticks)
+		.map(function (duration) {
+			if (duration === durationRelativeTo)
+				return '';
+			else if (parseInt(duration, 10) === parseInt(durationRelativeTo, 10) &&
+				duration.length > durationRelativeTo.length)
+				return duration.slice(durationRelativeTo.length);
+			return duration;
+		})
+		.reduce(function (shortestDuration, duration) {
+			if (shortestDuration.length > duration.length)
+				return duration;
+			return shortestDuration;
+		});
 }
 
 function parseMml(mmlString) {
@@ -140,8 +157,8 @@ function parseMml(mmlString) {
 
 function tokenText(token, state) {
 	switch (token.type) {
-		case 'note': return noteText(token.pitch, token.ticks, state.ticks);
-		case 'duration': return durationText(token.ticks);
+		case 'note': return noteText(token.pitch, token.ticks, state.duration);
+		case 'duration': return durationText(token.duration);
 		case 'octave': return octaveText(token.octave);
 		case 'volume': return volumeText(token.volume);
 		case 'tempo': return tempoText(token.tempo);
@@ -153,23 +170,12 @@ function tokenText(token, state) {
 	throw new Error('Unexpected token type.');
 }
 
-function noteText(pitch, ticks, currentTicks) {
-	var text = pitch;
-	var duration = ticksToNoteDuration(ticks);
-	for (
-		var dottedCurrentTicks = currentTicks, dots = '';
-		dottedCurrentTicks <= ticks;
-		dottedCurrentTicks = Math.floor(dottedCurrentTicks * 1.5), dots += '.'
-	) {
-		if (dottedCurrentTicks === ticks)
-			return text + (dots.length < duration.length ? dots : duration);
-	}
-	
-	return text + duration;
+function noteText(pitch, ticks, currentDuration) {
+	return pitch + relativeDuration(ticks, currentDuration);
 }
 
-function durationText(ticks) {
-	return 'L' + ticksToNoteDuration(ticks);
+function durationText(duration) {
+	return 'L' + duration;
 }
 
 function octaveText(octave) {
@@ -189,8 +195,9 @@ function tokenNeighbors(token, state) {
 	switch (token.type) {
 		case 'note':
 			neighbors.push(extend({}, state, { cursor: state.cursor + 1 }));
-			if (token.ticks !== state.ticks) {
-				neighbors.push(extend({}, state, { ticks: token.ticks }));
+			if (token.ticks !== noteDurationToTicks(state.duration)) {
+				var durations = ticksToAllNoteDurations(token.ticks);
+				neighbors.push(extend({}, state, { duration: durations[0] }));
 			}
 			break;
 		case 'octave':
@@ -201,14 +208,14 @@ function tokenNeighbors(token, state) {
 		case 'octaveUp':
 		case 'nextVoice':
 			neighbors.push(extend({}, state, { cursor: state.cursor + 1 }));
-			break;	
+			break;
 	}
 	return neighbors;
 }
 
-function optimizeDurationChanges(mmlTokens) {
+function runPathfinder(mmlTokens) {
 	var result = aStar({
-		start: { ticks: tpqn, cursor: 0 },
+		start: extend({}, defaultState, { cursor: 0 }),
 		isEnd: function (node) {
 			return node.cursor === mmlTokens.length;
 		},
@@ -218,8 +225,8 @@ function optimizeDurationChanges(mmlTokens) {
 		distance: function (nodeA, nodeB) {
 			if (nodeA.cursor !== nodeB.cursor)
 				return tokenText(mmlTokens[nodeA.cursor], nodeA).length;
-			if (nodeA.ticks !== nodeB.ticks)
-				return durationText(nodeB.ticks).length;
+			if (nodeA.duration !== nodeB.duration)
+				return durationText(nodeB.duration).length;
 			throw new Error('Unexpected node transition.');
 		},
 		heuristic: function (node) {
@@ -231,16 +238,22 @@ function optimizeDurationChanges(mmlTokens) {
 			return mmlTokens.length - node.cursor;
 		},
 		hash: function (node) {
-			return node.ticks + '|' + node.cursor;
+			return JSON.stringify(node);
 		}
 	});
+	if (result.status === 'noPath')
+		throw new Error('No optimized path found.');
+	return result.path;
+}
 
+function optimizeTokens(mmlTokens) {
+	var path = runPathfinder(mmlTokens);
 	var optimizedTokens = [];
-	for (var i = 1; i < result.path.length; ++i) {
-		if (result.path[i].cursor !== result.path[i-1].cursor)
-			optimizedTokens.push(mmlTokens[result.path[i-1].cursor]);
-		else if (result.path[i].ticks !== result.path[i-1].ticks)
-			optimizedTokens.push({ type: 'duration', ticks: result.path[i].ticks });
+	for (var i = 1; i < path.length; ++i) {
+		if (path[i].cursor !== path[i-1].cursor)
+			optimizedTokens.push(mmlTokens[path[i-1].cursor]);
+		else if (path[i].duration !== path[i-1].duration)
+			optimizedTokens.push({ type: 'duration', duration: path[i].duration });
 	}
 	return optimizedTokens;
 }
@@ -249,9 +262,9 @@ function generateMml(tokens) {
 	return tokens.reduce(function (acc, token) {
 		return {
 			text: acc.text + tokenText(token, acc),
-			ticks: token.type === 'duration' ? token.ticks : acc.ticks
+			duration: token.type === 'duration' ? token.duration : acc.duration
 		};
-	}, { text: '', ticks: tpqn }).text;
+	}, extend({}, defaultState, { text: '' })).text;
 }
 
 function chain(input, fns) {
@@ -264,7 +277,7 @@ function chain(input, fns) {
 module.exports = function opt(input) {
 	return chain(input, [
 		parseMml,
-		optimizeDurationChanges,
+		optimizeTokens,
 		generateMml
 	]);
 };
@@ -272,6 +285,8 @@ module.exports = function opt(input) {
 module.exports.noteDurationToTicks = noteDurationToTicks;
 module.exports.ticksToNoteDuration = ticksToNoteDuration;
 module.exports.ticksToAllNoteDurations = ticksToAllNoteDurations;
+module.exports.relativeDuration = relativeDuration;
 module.exports.parseMml = parseMml;
-module.exports.optimizeDurationChanges = optimizeDurationChanges;
+module.exports.runPathfinder = runPathfinder;
+module.exports.optimizeTokens = optimizeTokens;
 module.exports.generateMml = generateMml;
