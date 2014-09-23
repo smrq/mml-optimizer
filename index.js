@@ -88,7 +88,7 @@ function relativeDuration(ticks, durationRelativeTo) {
 		});
 }
 
-function pitchToMidiNote(note, octave) {
+function noteNameToMidiPitch(note, octave) {
 	var midiMap = {
 		'c': 0,
 		'd': 2,
@@ -106,17 +106,17 @@ function pitchToMidiNote(note, octave) {
 	return 12*octave + midiMap[note[0]] + accidentalMap[note[1] || ''];
 }
 
-function validOctaves(midi) {
-	var octave = Math.floor(midi / 12);
-	if (midi % 12 === 0 && octave > 0)
+function validOctaves(pitch) {
+	var octave = Math.floor(pitch / 12);
+	if (pitch % 12 === 0 && octave > 0)
 		return [octave - 1, octave];
-	if (midi % 12 === 11)
+	if (pitch % 12 === 11)
 		return [octave, octave + 1];
 	return [octave];
 }
 
-function relativePitch(midi, octave) {
-	var pitchMap = {
+function midiPitchToNoteName(pitch, octave) {
+	var noteNameMap = {
 		'-1': 'c-',
 		'0': 'c',
 		'1': 'c+',
@@ -132,7 +132,7 @@ function relativePitch(midi, octave) {
 		'11': 'b',
 		'12': 'b+'
 	};
-	return pitchMap[midi - (octave * 12)];
+	return noteNameMap[pitch - (octave * 12)];
 }
 
 function parseMml(mmlString) {
@@ -154,7 +154,7 @@ function parseMml(mmlString) {
 			}
 			tokens.push({
 				type: 'note',
-				midi: pitchToMidiNote(pitch, state.octave),
+				pitch: noteNameToMidiPitch(pitch, state.octave),
 				ticks: noteDurationToTicks(duration),
 				volume: state.volume
 			});
@@ -203,7 +203,7 @@ function parseMml(mmlString) {
 
 function tokenText(token, state) {
 	switch (token.type) {
-		case 'note': return noteText(token.midi, token.ticks, state.octave, state.duration);
+		case 'note': return noteText(token.pitch, token.ticks, state.octave, state.duration);
 		case 'duration': return durationText(token.duration);
 		case 'octave': return octaveText(token.octave);
 		case 'volume': return volumeText(token.volume);
@@ -216,8 +216,8 @@ function tokenText(token, state) {
 	throw new Error('Unexpected token type.');
 }
 
-function noteText(midi, ticks, currentOctave, currentDuration) {
-	return relativePitch(midi, currentOctave) + relativeDuration(ticks, currentDuration);
+function noteText(pitch, ticks, currentOctave, currentDuration) {
+	return midiPitchToNoteName(pitch, currentOctave) + relativeDuration(ticks, currentDuration);
 }
 
 function durationText(duration) {
@@ -340,9 +340,9 @@ module.exports.noteDurationToTicks = noteDurationToTicks;
 module.exports.ticksToNoteDuration = ticksToNoteDuration;
 module.exports.ticksToAllNoteDurations = ticksToAllNoteDurations;
 module.exports.relativeDuration = relativeDuration;
-module.exports.pitchToMidiNote = pitchToMidiNote;
+module.exports.noteNameToMidiPitch = noteNameToMidiPitch;
 module.exports.validOctaves = validOctaves;
-module.exports.relativePitch = relativePitch;
+module.exports.midiPitchToNoteName = midiPitchToNoteName;
 module.exports.parseMml = parseMml;
 module.exports.runPathfinder = runPathfinder;
 module.exports.optimizeTokens = optimizeTokens;

@@ -94,8 +94,8 @@ describe('relativeDuration', function () {
 	]);
 });
 
-describe('pitchToMidiNote', function () {
-	runCases('should convert {0} to {1}', opt.pitchToMidiNote, [
+describe('noteNameToMidiPitch', function () {
+	runCases('should convert {0} to {1}', opt.noteNameToMidiPitch, [
 		[['c', 5], 60],
 		[['c+', 5], 61],
 		[['c-', 5], 59],
@@ -106,15 +106,15 @@ describe('pitchToMidiNote', function () {
 
 describe('validOctaves', function () {
 	runCases('should convert {0} to {1}', opt.validOctaves, [
-		[opt.pitchToMidiNote('g', 4), [4]],
-		[opt.pitchToMidiNote('c', 4), [3, 4]],
-		[opt.pitchToMidiNote('b', 4), [4, 5]],
-		[opt.pitchToMidiNote('c', 0), [0]]
+		[opt.noteNameToMidiPitch('g', 4), [4]],
+		[opt.noteNameToMidiPitch('c', 4), [3, 4]],
+		[opt.noteNameToMidiPitch('b', 4), [4, 5]],
+		[opt.noteNameToMidiPitch('c', 0), [0]]
 	]);
 });
 
-describe('relativePitch', function () {
-	runCases('should convert {0} to {1}', opt.relativePitch, [
+describe('midiPitchToNoteName', function () {
+	runCases('should convert {0} to {1}', opt.midiPitchToNoteName, [
 		[[67, 5], 'g'],
 		[[68, 5], 'g+'],
 		[[60, 5], 'c'],
@@ -127,143 +127,143 @@ describe('relativePitch', function () {
 describe('parseMml', function () {
 	runCases('should parse {0}', opt.parseMml, [
 		['ccc', [
-			{ type: 'note', midi: 60, ticks: 500, volume: 100 },
-			{ type: 'note', midi: 60, ticks: 500, volume: 100 },
-			{ type: 'note', midi: 60, ticks: 500, volume: 100 }
+			{ type: 'note', pitch: 60, ticks: 500, volume: 100 },
+			{ type: 'note', pitch: 60, ticks: 500, volume: 100 },
+			{ type: 'note', pitch: 60, ticks: 500, volume: 100 }
 		]],
 		['cdefgabCDEFGAB', [
-			{ type: 'note', midi: 60, ticks: 500, volume: 100 },
-			{ type: 'note', midi: 62, ticks: 500, volume: 100 },
-			{ type: 'note', midi: 64, ticks: 500, volume: 100 },
-			{ type: 'note', midi: 65, ticks: 500, volume: 100 },
-			{ type: 'note', midi: 67, ticks: 500, volume: 100 },
-			{ type: 'note', midi: 69, ticks: 500, volume: 100 },
-			{ type: 'note', midi: 71, ticks: 500, volume: 100 },
-			{ type: 'note', midi: 60, ticks: 500, volume: 100 },
-			{ type: 'note', midi: 62, ticks: 500, volume: 100 },
-			{ type: 'note', midi: 64, ticks: 500, volume: 100 },
-			{ type: 'note', midi: 65, ticks: 500, volume: 100 },
-			{ type: 'note', midi: 67, ticks: 500, volume: 100 },
-			{ type: 'note', midi: 69, ticks: 500, volume: 100 },
-			{ type: 'note', midi: 71, ticks: 500, volume: 100 },
+			{ type: 'note', pitch: 60, ticks: 500, volume: 100 },
+			{ type: 'note', pitch: 62, ticks: 500, volume: 100 },
+			{ type: 'note', pitch: 64, ticks: 500, volume: 100 },
+			{ type: 'note', pitch: 65, ticks: 500, volume: 100 },
+			{ type: 'note', pitch: 67, ticks: 500, volume: 100 },
+			{ type: 'note', pitch: 69, ticks: 500, volume: 100 },
+			{ type: 'note', pitch: 71, ticks: 500, volume: 100 },
+			{ type: 'note', pitch: 60, ticks: 500, volume: 100 },
+			{ type: 'note', pitch: 62, ticks: 500, volume: 100 },
+			{ type: 'note', pitch: 64, ticks: 500, volume: 100 },
+			{ type: 'note', pitch: 65, ticks: 500, volume: 100 },
+			{ type: 'note', pitch: 67, ticks: 500, volume: 100 },
+			{ type: 'note', pitch: 69, ticks: 500, volume: 100 },
+			{ type: 'note', pitch: 71, ticks: 500, volume: 100 },
 		]],
 		['c#d#e#f#g#a#b#c+d+e+f+g+a+b+c-d-e-f-g-a-b-', [
-			{ type: 'note', midi: 61, ticks: 500, volume: 100 },
-			{ type: 'note', midi: 63, ticks: 500, volume: 100 },
-			{ type: 'note', midi: 65, ticks: 500, volume: 100 },
-			{ type: 'note', midi: 66, ticks: 500, volume: 100 },
-			{ type: 'note', midi: 68, ticks: 500, volume: 100 },
-			{ type: 'note', midi: 70, ticks: 500, volume: 100 },
-			{ type: 'note', midi: 72, ticks: 500, volume: 100 },
-			{ type: 'note', midi: 61, ticks: 500, volume: 100 },
-			{ type: 'note', midi: 63, ticks: 500, volume: 100 },
-			{ type: 'note', midi: 65, ticks: 500, volume: 100 },
-			{ type: 'note', midi: 66, ticks: 500, volume: 100 },
-			{ type: 'note', midi: 68, ticks: 500, volume: 100 },
-			{ type: 'note', midi: 70, ticks: 500, volume: 100 },
-			{ type: 'note', midi: 72, ticks: 500, volume: 100 },
-			{ type: 'note', midi: 59, ticks: 500, volume: 100 },
-			{ type: 'note', midi: 61, ticks: 500, volume: 100 },
-			{ type: 'note', midi: 63, ticks: 500, volume: 100 },
-			{ type: 'note', midi: 64, ticks: 500, volume: 100 },
-			{ type: 'note', midi: 66, ticks: 500, volume: 100 },
-			{ type: 'note', midi: 68, ticks: 500, volume: 100 },
-			{ type: 'note', midi: 70, ticks: 500, volume: 100 }
+			{ type: 'note', pitch: 61, ticks: 500, volume: 100 },
+			{ type: 'note', pitch: 63, ticks: 500, volume: 100 },
+			{ type: 'note', pitch: 65, ticks: 500, volume: 100 },
+			{ type: 'note', pitch: 66, ticks: 500, volume: 100 },
+			{ type: 'note', pitch: 68, ticks: 500, volume: 100 },
+			{ type: 'note', pitch: 70, ticks: 500, volume: 100 },
+			{ type: 'note', pitch: 72, ticks: 500, volume: 100 },
+			{ type: 'note', pitch: 61, ticks: 500, volume: 100 },
+			{ type: 'note', pitch: 63, ticks: 500, volume: 100 },
+			{ type: 'note', pitch: 65, ticks: 500, volume: 100 },
+			{ type: 'note', pitch: 66, ticks: 500, volume: 100 },
+			{ type: 'note', pitch: 68, ticks: 500, volume: 100 },
+			{ type: 'note', pitch: 70, ticks: 500, volume: 100 },
+			{ type: 'note', pitch: 72, ticks: 500, volume: 100 },
+			{ type: 'note', pitch: 59, ticks: 500, volume: 100 },
+			{ type: 'note', pitch: 61, ticks: 500, volume: 100 },
+			{ type: 'note', pitch: 63, ticks: 500, volume: 100 },
+			{ type: 'note', pitch: 64, ticks: 500, volume: 100 },
+			{ type: 'note', pitch: 66, ticks: 500, volume: 100 },
+			{ type: 'note', pitch: 68, ticks: 500, volume: 100 },
+			{ type: 'note', pitch: 70, ticks: 500, volume: 100 }
 		]],
 		['c2c4c8c', [
-			{ type: 'note', midi: 60, ticks: 1000, volume: 100 },
-			{ type: 'note', midi: 60, ticks: 500, volume: 100 },
-			{ type: 'note', midi: 60, ticks: 250, volume: 100 },
-			{ type: 'note', midi: 60, ticks: 500, volume: 100 }
+			{ type: 'note', pitch: 60, ticks: 1000, volume: 100 },
+			{ type: 'note', pitch: 60, ticks: 500, volume: 100 },
+			{ type: 'note', pitch: 60, ticks: 250, volume: 100 },
+			{ type: 'note', pitch: 60, ticks: 500, volume: 100 }
 		]],
 		['c2c2.c2..c2...', [
-			{ type: 'note', midi: 60, ticks: 1000, volume: 100 },
-			{ type: 'note', midi: 60, ticks: 1500, volume: 100 },
-			{ type: 'note', midi: 60, ticks: 2250, volume: 100 },
-			{ type: 'note', midi: 60, ticks: 3375, volume: 100 }
+			{ type: 'note', pitch: 60, ticks: 1000, volume: 100 },
+			{ type: 'note', pitch: 60, ticks: 1500, volume: 100 },
+			{ type: 'note', pitch: 60, ticks: 2250, volume: 100 },
+			{ type: 'note', pitch: 60, ticks: 3375, volume: 100 }
 		]],
 		['cc.c..c...', [
-			{ type: 'note', midi: 60, ticks: 500, volume: 100 },
-			{ type: 'note', midi: 60, ticks: 750, volume: 100 },
-			{ type: 'note', midi: 60, ticks: 1125, volume: 100 },
-			{ type: 'note', midi: 60, ticks: 1687, volume: 100 }
+			{ type: 'note', pitch: 60, ticks: 500, volume: 100 },
+			{ type: 'note', pitch: 60, ticks: 750, volume: 100 },
+			{ type: 'note', pitch: 60, ticks: 1125, volume: 100 },
+			{ type: 'note', pitch: 60, ticks: 1687, volume: 100 }
 		]],
 		['ccc /* this is a comment v64 */ ccc', [
-			{ type: 'note', midi: 60, ticks: 500, volume: 100 },
-			{ type: 'note', midi: 60, ticks: 500, volume: 100 },
-			{ type: 'note', midi: 60, ticks: 500, volume: 100 },
-			{ type: 'note', midi: 60, ticks: 500, volume: 100 },
-			{ type: 'note', midi: 60, ticks: 500, volume: 100 },
-			{ type: 'note', midi: 60, ticks: 500, volume: 100 }
+			{ type: 'note', pitch: 60, ticks: 500, volume: 100 },
+			{ type: 'note', pitch: 60, ticks: 500, volume: 100 },
+			{ type: 'note', pitch: 60, ticks: 500, volume: 100 },
+			{ type: 'note', pitch: 60, ticks: 500, volume: 100 },
+			{ type: 'note', pitch: 60, ticks: 500, volume: 100 },
+			{ type: 'note', pitch: 60, ticks: 500, volume: 100 }
 		]],
 		['ccc /* this is a\nmulti line\r\ncomment v64 */ ccc', [
-			{ type: 'note', midi: 60, ticks: 500, volume: 100 },
-			{ type: 'note', midi: 60, ticks: 500, volume: 100 },
-			{ type: 'note', midi: 60, ticks: 500, volume: 100 },
-			{ type: 'note', midi: 60, ticks: 500, volume: 100 },
-			{ type: 'note', midi: 60, ticks: 500, volume: 100 },
-			{ type: 'note', midi: 60, ticks: 500, volume: 100 }
+			{ type: 'note', pitch: 60, ticks: 500, volume: 100 },
+			{ type: 'note', pitch: 60, ticks: 500, volume: 100 },
+			{ type: 'note', pitch: 60, ticks: 500, volume: 100 },
+			{ type: 'note', pitch: 60, ticks: 500, volume: 100 },
+			{ type: 'note', pitch: 60, ticks: 500, volume: 100 },
+			{ type: 'note', pitch: 60, ticks: 500, volume: 100 }
 		]],
 		['ccL8cc', [
-			{ type: 'note', midi: 60, ticks: 500, volume: 100 },
-			{ type: 'note', midi: 60, ticks: 500, volume: 100 },
-			{ type: 'note', midi: 60, ticks: 250, volume: 100 },
-			{ type: 'note', midi: 60, ticks: 250, volume: 100 }
+			{ type: 'note', pitch: 60, ticks: 500, volume: 100 },
+			{ type: 'note', pitch: 60, ticks: 500, volume: 100 },
+			{ type: 'note', pitch: 60, ticks: 250, volume: 100 },
+			{ type: 'note', pitch: 60, ticks: 250, volume: 100 }
 		]],
 		['L2cc.c..c...', [
-			{ type: 'note', midi: 60, ticks: 1000, volume: 100 },
-			{ type: 'note', midi: 60, ticks: 1500, volume: 100 },
-			{ type: 'note', midi: 60, ticks: 2250, volume: 100 },
-			{ type: 'note', midi: 60, ticks: 3375, volume: 100 }
+			{ type: 'note', pitch: 60, ticks: 1000, volume: 100 },
+			{ type: 'note', pitch: 60, ticks: 1500, volume: 100 },
+			{ type: 'note', pitch: 60, ticks: 2250, volume: 100 },
+			{ type: 'note', pitch: 60, ticks: 3375, volume: 100 }
 		]],
 		['L4.cc.c..c...', [
-			{ type: 'note', midi: 60, ticks: 750, volume: 100 },
-			{ type: 'note', midi: 60, ticks: 1125, volume: 100 },
-			{ type: 'note', midi: 60, ticks: 1687, volume: 100 },
-			{ type: 'note', midi: 60, ticks: 2530, volume: 100 }
+			{ type: 'note', pitch: 60, ticks: 750, volume: 100 },
+			{ type: 'note', pitch: 60, ticks: 1125, volume: 100 },
+			{ type: 'note', pitch: 60, ticks: 1687, volume: 100 },
+			{ type: 'note', pitch: 60, ticks: 2530, volume: 100 }
 		]],
 		['o2c>c>c<c<c', [
 			{ type: 'octave', octave: 2 },
-			{ type: 'note', midi: 24, ticks: 500, volume: 100 },
+			{ type: 'note', pitch: 24, ticks: 500, volume: 100 },
 			{ type: 'octaveUp' },
-			{ type: 'note', midi: 36, ticks: 500, volume: 100 },
+			{ type: 'note', pitch: 36, ticks: 500, volume: 100 },
 			{ type: 'octaveUp' },
-			{ type: 'note', midi: 48, ticks: 500, volume: 100 },
+			{ type: 'note', pitch: 48, ticks: 500, volume: 100 },
 			{ type: 'octaveDown' },
-			{ type: 'note', midi: 36, ticks: 500, volume: 100 },
+			{ type: 'note', pitch: 36, ticks: 500, volume: 100 },
 			{ type: 'octaveDown' },
-			{ type: 'note', midi: 24, ticks: 500, volume: 100 }
+			{ type: 'note', pitch: 24, ticks: 500, volume: 100 }
 		]],
 		['t180ccc', [
 			{ type: 'tempo', tempo: 180 },
-			{ type: 'note', midi: 60, ticks: 500, volume: 100 },
-			{ type: 'note', midi: 60, ticks: 500, volume: 100 },
-			{ type: 'note', midi: 60, ticks: 500, volume: 100 }
+			{ type: 'note', pitch: 60, ticks: 500, volume: 100 },
+			{ type: 'note', pitch: 60, ticks: 500, volume: 100 },
+			{ type: 'note', pitch: 60, ticks: 500, volume: 100 }
 		]],
 		['v64ccc', [
 			{ type: 'volume', volume: 64 },
-			{ type: 'note', midi: 60, ticks: 500, volume: 64 },
-			{ type: 'note', midi: 60, ticks: 500, volume: 64 },
-			{ type: 'note', midi: 60, ticks: 500, volume: 64 }
+			{ type: 'note', pitch: 60, ticks: 500, volume: 64 },
+			{ type: 'note', pitch: 60, ticks: 500, volume: 64 },
+			{ type: 'note', pitch: 60, ticks: 500, volume: 64 }
 		]],
 		['c&c&c', [
-			{ type: 'note', midi: 60, ticks: 500, volume: 100 },
+			{ type: 'note', pitch: 60, ticks: 500, volume: 100 },
 			{ type: 'tie' },
-			{ type: 'note', midi: 60, ticks: 500, volume: 100 },
+			{ type: 'note', pitch: 60, ticks: 500, volume: 100 },
 			{ type: 'tie' },
-			{ type: 'note', midi: 60, ticks: 500, volume: 100 }
+			{ type: 'note', pitch: 60, ticks: 500, volume: 100 }
 		]],
 		['c,c,c', [
-			{ type: 'note', midi: 60, ticks: 500, volume: 100 },
+			{ type: 'note', pitch: 60, ticks: 500, volume: 100 },
 			{ type: 'nextVoice' },
-			{ type: 'note', midi: 60, ticks: 500, volume: 100 },
+			{ type: 'note', pitch: 60, ticks: 500, volume: 100 },
 			{ type: 'nextVoice' },
-			{ type: 'note', midi: 60, ticks: 500, volume: 100 }
+			{ type: 'note', pitch: 60, ticks: 500, volume: 100 }
 		]],
 		['@#$ ccc !|/', [
-			{ type: 'note', midi: 60, ticks: 500, volume: 100 },
-			{ type: 'note', midi: 60, ticks: 500, volume: 100 },
-			{ type: 'note', midi: 60, ticks: 500, volume: 100 }
+			{ type: 'note', pitch: 60, ticks: 500, volume: 100 },
+			{ type: 'note', pitch: 60, ticks: 500, volume: 100 },
+			{ type: 'note', pitch: 60, ticks: 500, volume: 100 }
 		]]
 	]);
 });
