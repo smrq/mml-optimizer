@@ -88,6 +88,24 @@ function relativeDuration(ticks, durationRelativeTo) {
 		});
 }
 
+function pitchToMidiNote(note, octave) {
+	var midiMap = {
+		'c': 0,
+		'd': 2,
+		'e': 4,
+		'f': 5,
+		'g': 7,
+		'a': 9,
+		'b': 11
+	};
+	var accidentalMap = {
+		'+': 1,
+		'-': -1,
+		'': 0
+	};
+	return 12*octave + midiMap[note[0]] + accidentalMap[note[1] || ''];
+}
+
 function parseMml(mmlString) {
 	var state = extend({}, defaultState);
 	var tokens = [];
@@ -108,6 +126,7 @@ function parseMml(mmlString) {
 			tokens.push({
 				type: 'note',
 				pitch: pitch,
+				midi: pitchToMidiNote(pitch, state.octave),
 				octave: state.octave,
 				ticks: noteDurationToTicks(duration),
 				volume: state.volume
@@ -294,6 +313,7 @@ module.exports.noteDurationToTicks = noteDurationToTicks;
 module.exports.ticksToNoteDuration = ticksToNoteDuration;
 module.exports.ticksToAllNoteDurations = ticksToAllNoteDurations;
 module.exports.relativeDuration = relativeDuration;
+module.exports.pitchToMidiNote = pitchToMidiNote;
 module.exports.parseMml = parseMml;
 module.exports.runPathfinder = runPathfinder;
 module.exports.optimizeTokens = optimizeTokens;
