@@ -196,8 +196,14 @@ function tokenNeighbors(token, state) {
 		case 'note':
 			neighbors.push(extend({}, state, { cursor: state.cursor + 1 }));
 			if (token.ticks !== noteDurationToTicks(state.duration)) {
-				var durations = ticksToAllNoteDurations(token.ticks);
-				neighbors.push(extend({}, state, { duration: durations[0] }));
+				ticksToAllNoteDurations(token.ticks)
+					.forEach(function (duration) {
+						neighbors.push(extend({}, state, { duration: duration }));
+						while (duration[duration.length-1] === '.') {
+							duration = duration.slice(0,-1);
+							neighbors.push(extend({}, state, { duration: duration }));
+						}
+					});
 			}
 			break;
 		case 'octave':
@@ -254,6 +260,8 @@ function optimizeTokens(mmlTokens) {
 			optimizedTokens.push(mmlTokens[path[i-1].cursor]);
 		else if (path[i].duration !== path[i-1].duration)
 			optimizedTokens.push({ type: 'duration', duration: path[i].duration });
+		else
+			throw new Error('Unexpected node transition.');
 	}
 	return optimizedTokens;
 }

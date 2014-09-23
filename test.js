@@ -90,7 +90,7 @@ describe('relativeDuration', function () {
 		[[opt.noteDurationToTicks('4....'), '4.'], '...'],
 		[[opt.noteDurationToTicks('12'), '12'], ''],
 		[[opt.noteDurationToTicks('12'), '18'], '.'],
-		[[opt.noteDurationToTicks('12'), '27'], '12'],
+		[[opt.noteDurationToTicks('12'), '27'], '12']
 	]);
 });
 
@@ -274,9 +274,10 @@ describe('mml-optimizer', function () {
 		['c4.c4..c4.c4..c4.', 'L4.cc.cc.c'],
 		['c4..c4...c4..c4...c4..', 'L4..cc.cc.c'],
 		['c30c30c30c30c30...','L30ccccc9'],
-		//['c16.c16c16.c16c16.c16c16.c16', 'L16c.cc.cc.cc.c'],
-		//['L24ccccccL16cc', 'L24ccccccc.c.'],
-		//['c64c43c64c43', 'L64cc.cc.'],
+		['c16.c16c16.c16c16.c16c16.c16', 'L16c.cc.cc.cc.c'],
+		['L18ccccccL12cc', 'L18ccccccc.c.'],
+		['c64c43c64c43', 'L64cc.cc.'],
+		['L64cccc.c.c.', 'L64cccL43ccc'],
 		//['b>c<b>d', 'bb+b>d'], // or b>cc-d
 		//['O1c>>>c<<<c', 'O1cO4cO1c'],
 	]);
