@@ -1,5 +1,5 @@
 var opt = require('./index.js');
-var assert = require('assert');
+var assert = require('chai').assert;
 var fmt = require('simple-fmt');
 
 function runCases(text, fn, cases) {
@@ -223,15 +223,10 @@ describe('parseMml', function () {
 			{ type: 'note', pitch: 60, ticks: 2530, volume: 100 }
 		]],
 		['o2c>c>c<c<c', [
-			{ type: 'octave', octave: 2 },
 			{ type: 'note', pitch: 24, ticks: 500, volume: 100 },
-			{ type: 'octaveUp' },
 			{ type: 'note', pitch: 36, ticks: 500, volume: 100 },
-			{ type: 'octaveUp' },
 			{ type: 'note', pitch: 48, ticks: 500, volume: 100 },
-			{ type: 'octaveDown' },
 			{ type: 'note', pitch: 36, ticks: 500, volume: 100 },
-			{ type: 'octaveDown' },
 			{ type: 'note', pitch: 24, ticks: 500, volume: 100 }
 		]],
 		['t180ccc', [
@@ -307,8 +302,10 @@ describe('mml-optimizer', function () {
 		['c16.c16c16.c16c16.c16c16.c16', 'L16c.cc.cc.cc.c'],
 		['L18ccccccL12cc', 'L18ccccccc.c.'],
 		['c64c43c64c43', 'L64cc.cc.'],
-		['L64cccc.c.c.', 'L64cccL43ccc'],
-		//['b>c<b>d', 'bb+b>d'], // or b>cc-d
-		//['O1c>>>c<<<c', 'O1cO4cO1c'],
+		['L64ccccc.c.c.c.', 'L64ccccL43cccc'],
+		['O4gO5gO4gO7gO6g', '<g>g<gO7g<g'],
+		['b>c<b>d', 'bb+b>d'], // or b>cc-d
+		['b>c>c<b<b>d', 'b>cb+bc-d'],
+		['O1c>>>c<<<c', 'O1cO4cO1c'],
 	]);
 });

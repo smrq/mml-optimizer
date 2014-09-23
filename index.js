@@ -7,7 +7,6 @@ var initialVolume = 100;
 var initialDuration = '4';
 var tpqn = 500;
 var minimumNoteDuration = 64;
-var minimumNoteTicks = noteDurationAndDotsToTicks(minimumNoteDuration, 0);
 
 var defaultState = {
 	octave: 5,
@@ -165,7 +164,6 @@ function parseMml(mmlString) {
 		} else if (result = /^[Oo]([0-9]+)/.exec(mmlString)) {
 			var octave = parseInt(result[1], 10);
 			state.octave = octave;
-			tokens.push({ type: 'octave', octave: octave });
 			tokenLength = result[0].length;
 		} else if (result = /^[Vv]([0-9]+)/.exec(mmlString)) {
 			var volume = parseInt(result[1], 10);
@@ -182,11 +180,9 @@ function parseMml(mmlString) {
 			tokenLength = 1;
 		} else if (mmlString[0] === '<') {
 			--state.octave;
-			tokens.push({ type: 'octaveDown' });
 			tokenLength = 1;
 		} else if (mmlString[0] === '>') {
 			++state.octave;
-			tokens.push({ type: 'octaveUp' });
 			tokenLength = 1;
 		} else if (mmlString[0] === ',') {
 			tokens.push({ type: 'nextVoice' });
@@ -205,12 +201,10 @@ function tokenText(token, state) {
 	switch (token.type) {
 		case 'note': return noteText(token.pitch, token.ticks, state.octave, state.duration);
 		case 'duration': return durationText(token.duration);
-		case 'octave': return octaveText(token.octave);
+		case 'octave': return octaveText(token.octave, state.octave);
 		case 'volume': return volumeText(token.volume);
 		case 'tempo': return tempoText(token.tempo);
 		case 'tie': return '&';
-		case 'octaveDown': return '<';
-		case 'octaveUp': return '>';
 		case 'nextVoice': return ',';
 	}
 	throw new Error('Unexpected token type.');
@@ -224,7 +218,11 @@ function durationText(duration) {
 	return 'L' + duration;
 }
 
-function octaveText(octave) {
+function octaveText(octave, currentOctave) {
+	if (currentOctave - octave === 1)
+		return '<';
+	if (currentOctave - octave === -1)
+		return '>';
 	return 'O' + octave;
 }
 
@@ -240,24 +238,27 @@ function tokenNeighbors(token, state) {
 	var neighbors = [];
 	switch (token.type) {
 		case 'note':
-			neighbors.push(extend({}, state, { cursor: state.cursor + 1 }));
-			if (token.ticks !== noteDurationToTicks(state.duration)) {
-				ticksToAllNoteDurations(token.ticks)
-					.forEach(function (duration) {
-						neighbors.push(extend({}, state, { duration: duration }));
-						while (duration[duration.length-1] === '.') {
-							duration = duration.slice(0,-1);
-							neighbors.push(extend({}, state, { duration: duration }));
-						}
-					});
-			}
+			validOctaves(token.pitch).forEach(function (octave) {
+				if (octave === state.octave) {
+					neighbors.push(extend({}, state, { cursor: state.cursor + 1 }));
+					if (token.ticks !== noteDurationToTicks(state.duration)) {
+						ticksToAllNoteDurations(token.ticks)
+							.forEach(function (duration) {
+								neighbors.push(extend({}, state, { duration: duration }));
+								while (duration[duration.length-1] === '.') {
+									duration = duration.slice(0,-1);
+									neighbors.push(extend({}, state, { duration: duration }));
+								}
+							});
+					}
+				} else {
+					neighbors.push(extend({}, state, { octave: octave }));
+				}
+			});
 			break;
-		case 'octave':
 		case 'volume':
 		case 'tempo':
 		case 'tie':
-		case 'octaveDown':
-		case 'octaveUp':
 		case 'nextVoice':
 			neighbors.push(extend({}, state, { cursor: state.cursor + 1 }));
 			break;
@@ -279,6 +280,8 @@ function runPathfinder(mmlTokens) {
 				return tokenText(mmlTokens[nodeA.cursor], nodeA).length;
 			if (nodeA.duration !== nodeB.duration)
 				return durationText(nodeB.duration).length;
+			if (nodeA.octave !== nodeB.octave)
+				return octaveText(nodeB.octave, nodeA.octave).length;
 			throw new Error('Unexpected node transition.');
 		},
 		heuristic: function (node) {
@@ -306,6 +309,8 @@ function optimizeTokens(mmlTokens) {
 			optimizedTokens.push(mmlTokens[path[i-1].cursor]);
 		else if (path[i].duration !== path[i-1].duration)
 			optimizedTokens.push({ type: 'duration', duration: path[i].duration });
+		else if (path[i].octave !== path[i-1].octave)
+			optimizedTokens.push({ type: 'octave', octave: path[i].octave });
 		else
 			throw new Error('Unexpected node transition.');
 	}
@@ -316,7 +321,8 @@ function generateMml(tokens) {
 	return tokens.reduce(function (acc, token) {
 		return extend(acc, {
 			text: acc.text + tokenText(token, acc),
-			duration: token.type === 'duration' ? token.duration : acc.duration
+			duration: token.type === 'duration' ? token.duration : acc.duration,
+			octave: token.type === 'octave' ? token.octave : acc.octave
 		});
 	}, extend({}, defaultState, { text: '' })).text;
 }

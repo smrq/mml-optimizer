@@ -18,6 +18,7 @@
   },
   "homepage": "https://github.com/smrq/mml-optimizer",
   "devDependencies": {
+    "chai": "^1.9.1",
     "mocha": "^1.21.4",
     "simple-fmt": "^0.1.0"
   },
