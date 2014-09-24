@@ -1,72 +1,77 @@
 var aStar = require('a-star');
 var extend = require('extend');
 
-var tpqn = 500;
-var minimumNoteDuration = 64;
-var defaultState = {
-	octave: 5,
-	tempo: 100,
-	volume: 100,
-	duration: '4'
-};
+var optionAliases = {
+	'mabi': {
+		tpqn: 96,
+		minimumNoteDuration: 64,
+		defaultState: {
+			octave: 4,
+			tempo: 120,
+			volume: 8/15,
+			duration: '4'
+		},
+		maxVolume: 15,
+		supportsNoteNumbers: true,
+		tracksShareState: false
+	},
+	'aa': {
+		tpqn: 500,
+		minimumNoteDuration: 64,
+		defaultState: {
+			octave: 5,
+			tempo: 100,
+			volume: 100/127,
+			duration: '4'
+		},
+		maxVolume: 127,
+		supportsNoteNumbers: false,
+		tracksShareState: true
+	}
+}
+var defaultOptions = optionAliases['aa'];
 
-function noteDurationToTicks(duration) {
+function noteDurationToTicks(duration, options) {
 	return noteDurationAndDotsToTicks(
 		parseInt(duration, 10),
-		/[^.]*([.]*)/.exec(duration)[1].length);
+		/[^.]*([.]*)/.exec(duration)[1].length,
+		options);
 }
 
-function noteDurationAndDotsToTicks(duration, dots) {
-	var ticks = Math.floor(tpqn * 4 / duration);
+function noteDurationAndDotsToTicks(duration, dots, options) {
+	var ticks = Math.floor(options.tpqn * 4 / duration);
 	for (var i = 0; i < dots; ++i)
 		ticks = Math.floor(ticks * 1.5);
 	return ticks;
 }
 
-function ticksToNoteDuration(ticks) {
-	var dots = '';
-	var upperBoundIncl;
-	var lowerBoundExcl;
-
-	do {
-		// Bounds for the preimage of floor(1.5*floor(1.5*...floor(4*tpqn/ticks)))
-		upperBoundIncl = Math.pow(1.5,dots.length)*4*tpqn / ticks;
-		lowerBoundExcl = Math.pow(1.5,dots.length)*4*tpqn / (ticks + 3*Math.pow(1.5,dots.length) - 2);
-		for (var n = Math.floor(upperBoundIncl); n > lowerBoundExcl; --n) {
-			if (noteDurationAndDotsToTicks(n, dots.length) === ticks)
-				return n + dots;
-		}
-		dots += '.';
-	} while (lowerBoundExcl < minimumNoteDuration);
-
-	return null;
-}
-
-function ticksToAllNoteDurations(ticks) {
+function ticksToAllNoteDurations(ticks, options) {
 	var dots = '';
 	var upperBoundIncl;
 	var lowerBoundExcl;
 	var result = [];
 
-	do {
+	while (true) {
 		// Bounds for the preimage of floor(1.5*floor(1.5*...floor(4*tpqn/ticks)))
-		upperBoundIncl = Math.pow(1.5,dots.length)*4*tpqn / ticks;
-		lowerBoundExcl = Math.pow(1.5,dots.length)*4*tpqn / (ticks + 3*Math.pow(1.5,dots.length) - 2);
+		upperBoundIncl = Math.pow(1.5,dots.length)*4*options.tpqn / ticks;
+		lowerBoundExcl = Math.pow(1.5,dots.length)*4*options.tpqn / (ticks + 3*Math.pow(1.5,dots.length) - 2);
+		if (lowerBoundExcl >= options.minimumNoteDuration)
+			break;
 		for (var n = Math.floor(upperBoundIncl); n > lowerBoundExcl; --n) {
-			if (noteDurationAndDotsToTicks(n, dots.length) === ticks) {
+			if (noteDurationAndDotsToTicks(n, dots.length, options) === ticks) {
 				result.push(n + dots);
 				break;
 			}
 		}
 		dots += '.';
-	} while (lowerBoundExcl < minimumNoteDuration);
+	}
 
 	return result;
 }
 
-function relativeDuration(ticks, durationRelativeTo) {
+function relativeDuration(ticks, durationRelativeTo, options) {
 	var candidates = [];
-	return ticksToAllNoteDurations(ticks)
+	return ticksToAllNoteDurations(ticks, options)
 		.map(function (duration) {
 			if (duration === durationRelativeTo)
 				return '';
@@ -129,8 +134,8 @@ function midiPitchToNoteName(pitch, octave) {
 	return noteNameMap[pitch - (octave * 12)];
 }
 
-function parseMml(mmlString) {
-	var state = extend({}, defaultState);
+function parseMml(mmlString, options) {
+	var state = extend({}, options.defaultState);
 	var tokens = [];
 
 	while (mmlString.length) {
@@ -149,7 +154,7 @@ function parseMml(mmlString) {
 			tokens.push({
 				type: 'note',
 				pitch: noteNameToMidiPitch(noteName, state.octave),
-				ticks: noteDurationToTicks(duration),
+				ticks: noteDurationToTicks(duration, options),
 				volume: state.volume
 			});
 			tokenLength = result[0].length;
@@ -162,7 +167,7 @@ function parseMml(mmlString) {
 			}
 			tokens.push({
 				type: 'rest',
-				ticks: noteDurationToTicks(duration)
+				ticks: noteDurationToTicks(duration, options)
 			});
 			tokenLength = result[0].length;
 		} else if (result = /^[Nn]([0-9]+)/.exec(mmlString)) {
@@ -170,7 +175,7 @@ function parseMml(mmlString) {
 			tokens.push({
 				type: 'note',
 				pitch: pitch,
-				ticks: noteDurationToTicks(state.duration),
+				ticks: noteDurationToTicks(state.duration, options),
 				volume: state.volume
 			});
 			tokenLength = result[0].length;
@@ -182,7 +187,7 @@ function parseMml(mmlString) {
 			state.octave = octave;
 			tokenLength = result[0].length;
 		} else if (result = /^[Vv]([0-9]+)/.exec(mmlString)) {
-			var volume = parseInt(result[1], 10);
+			var volume = parseInt(result[1], 10) / options.maxVolume;
 			state.volume = volume;
 			tokens.push({ type: 'volume', volume: volume });
 			tokenLength = result[0].length;
@@ -213,13 +218,13 @@ function parseMml(mmlString) {
 	return tokens;
 }
 
-function tokenText(token, state) {
+function tokenText(token, state, options) {
 	switch (token.type) {
-		case 'note': return noteText(token.pitch, token.ticks, state.octave, state.duration);
-		case 'rest': return restText(token.ticks, state.duration);
+		case 'note': return noteText(token.pitch, token.ticks, state.octave, state.duration, options);
+		case 'rest': return restText(token.ticks, state.duration, options);
 		case 'duration': return durationText(token.duration);
 		case 'octave': return octaveText(token.octave, state.octave);
-		case 'volume': return volumeText(token.volume);
+		case 'volume': return volumeText(token.volume, options);
 		case 'tempo': return tempoText(token.tempo);
 		case 'tie': return '&';
 		case 'nextVoice': return ',';
@@ -227,12 +232,12 @@ function tokenText(token, state) {
 	throw new Error('Unexpected token type.');
 }
 
-function noteText(pitch, ticks, currentOctave, currentDuration) {
-	return midiPitchToNoteName(pitch, currentOctave) + relativeDuration(ticks, currentDuration);
+function noteText(pitch, ticks, currentOctave, currentDuration, options) {
+	return midiPitchToNoteName(pitch, currentOctave) + relativeDuration(ticks, currentDuration, options);
 }
 
-function restText(ticks, currentDuration) {
-	return 'r' + relativeDuration(ticks, currentDuration);
+function restText(ticks, currentDuration, options) {
+	return 'r' + relativeDuration(ticks, currentDuration, options);
 }
 
 function durationText(duration) {
@@ -247,23 +252,23 @@ function octaveText(octave, currentOctave) {
 	return 'O' + octave;
 }
 
-function volumeText(volume) {
-	return 'V' + volume;
+function volumeText(volume, options) {
+	return 'V' + Math.round(volume * options.maxVolume);
 }
 
 function tempoText(tempo) {
 	return 'T' + tempo;
 }
 
-function tokenNeighbors(token, state) {
+function tokenNeighbors(token, state, options) {
 	var neighbors = [];
 	switch (token.type) {
 		case 'note':
 			validOctaves(token.pitch).forEach(function (octave) {
 				if (octave === state.octave) {
 					neighbors.push(extend({}, state, { cursor: state.cursor + 1 }));
-					if (token.ticks !== noteDurationToTicks(state.duration)) {
-						ticksToAllNoteDurations(token.ticks)
+					if (token.ticks !== noteDurationToTicks(state.duration, options)) {
+						ticksToAllNoteDurations(token.ticks, options)
 							.forEach(function (duration) {
 								neighbors.push(extend({}, state, { duration: duration }));
 								while (duration[duration.length-1] === '.') {
@@ -279,8 +284,8 @@ function tokenNeighbors(token, state) {
 			break;
 		case 'rest':
 			neighbors.push(extend({}, state, { cursor: state.cursor + 1 }));
-			if (token.ticks !== noteDurationToTicks(state.duration)) {
-				ticksToAllNoteDurations(token.ticks)
+			if (token.ticks !== noteDurationToTicks(state.duration, options)) {
+				ticksToAllNoteDurations(token.ticks, options)
 					.forEach(function (duration) {
 						neighbors.push(extend({}, state, { duration: duration }));
 						while (duration[duration.length-1] === '.') {
@@ -299,18 +304,18 @@ function tokenNeighbors(token, state) {
 	return neighbors;
 }
 
-function findPath(mmlTokens) {
+function findPath(mmlTokens, options) {
 	var result = aStar({
-		start: extend({}, defaultState, { cursor: 0 }),
+		start: extend({}, options.defaultState, { cursor: 0 }),
 		isEnd: function (node) {
 			return node.cursor === mmlTokens.length;
 		},
 		neighbor: function (node) {
-			return tokenNeighbors(mmlTokens[node.cursor], node);
+			return tokenNeighbors(mmlTokens[node.cursor], node, options);
 		},
 		distance: function (nodeA, nodeB) {
 			if (nodeA.cursor !== nodeB.cursor)
-				return tokenText(mmlTokens[nodeA.cursor], nodeA).length;
+				return tokenText(mmlTokens[nodeA.cursor], nodeA, options).length;
 			if (nodeA.duration !== nodeB.duration)
 				return durationText(nodeB.duration).length;
 			if (nodeA.octave !== nodeB.octave)
@@ -329,8 +334,8 @@ function findPath(mmlTokens) {
 	return result.path;
 }
 
-function optimizeTokens(mmlTokens) {
-	var path = findPath(mmlTokens);
+function optimizeTokens(mmlTokens, options) {
+	var path = findPath(mmlTokens, options);
 	var optimizedTokens = [];
 	for (var i = 1; i < path.length; ++i) {
 		if (path[i].cursor !== path[i-1].cursor)
@@ -345,35 +350,39 @@ function optimizeTokens(mmlTokens) {
 	return optimizedTokens;
 }
 
-function generateMml(tokens) {
+function generateMml(tokens, options) {
 	return tokens.reduce(function (acc, token) {
 		return extend(acc, {
-			text: acc.text + tokenText(token, acc),
+			text: acc.text + tokenText(token, acc, options),
 			octave: token.type === 'octave' ? token.octave : acc.octave,
 			tempo: token.type === 'tempo' ? token.tempo : acc.tempo,
 			volume: token.type === 'volume' ? token.volume : acc.volume,
 			duration: token.type === 'duration' ? token.duration : acc.duration
 		});
-	}, extend({}, defaultState, { text: '' })).text;
+	}, extend({}, options.defaultState, { text: '' })).text;
 }
 
-function chain(input, fns) {
-	for (var i = 0; i < fns.length; ++i) {
-		input = fns[i](input);
-	}
-	return input;
+function getOptions(alias) {
+	if (!alias)
+		return defaultOptions;
+	return optionAliases[alias] || defaultOptions;
 }
 
-module.exports = function opt(input) {
-	return chain(input, [
-		parseMml,
-		optimizeTokens,
-		generateMml
-	]);
+module.exports = function opt(input, options) {
+	options = options || {};
+	var outputOptions = getOptions(options.output);
+	var inputOptions = extend(getOptions(options.input), {
+		tpqn: outputOptions.tpqn,
+		minimumNoteDuration: outputOptions.tpqn
+	});
+	var parsed = parseMml(input, inputOptions);
+	var optimized = optimizeTokens(parsed, outputOptions);
+	var generated = generateMml(optimized, outputOptions);
+
+	return generated;
 };
 
 module.exports.noteDurationToTicks = noteDurationToTicks;
-module.exports.ticksToNoteDuration = ticksToNoteDuration;
 module.exports.ticksToAllNoteDurations = ticksToAllNoteDurations;
 module.exports.relativeDuration = relativeDuration;
 module.exports.noteNameToMidiPitch = noteNameToMidiPitch;
