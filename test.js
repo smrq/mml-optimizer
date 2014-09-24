@@ -188,6 +188,11 @@ describe('parseMml', function () {
 			{ type: 'note', pitch: 60, ticks: 1125, volume: 100 },
 			{ type: 'note', pitch: 60, ticks: 1687, volume: 100 }
 		]],
+		['n60n30n90', [
+			{ type: 'note', pitch: 60, ticks: 500, volume: 100 },
+			{ type: 'note', pitch: 30, ticks: 500, volume: 100 },
+			{ type: 'note', pitch: 90, ticks: 500, volume: 100 }
+		]],
 		['r2r4r8r', [
 			{ type: 'rest', ticks: 1000 },
 			{ type: 'rest', ticks: 500 },

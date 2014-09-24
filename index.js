@@ -1,13 +1,8 @@
 var aStar = require('a-star');
 var extend = require('extend');
 
-var initialOctave = 5;
-var initialTempo = 100;
-var initialVolume = 100;
-var initialDuration = '4';
 var tpqn = 500;
 var minimumNoteDuration = 64;
-
 var defaultState = {
 	octave: 5,
 	tempo: 100,
@@ -144,7 +139,7 @@ function parseMml(mmlString) {
 		if (result = /^\/\*[^]*?\*\//.exec(mmlString)) {
 			tokenLength = result[0].length;
 		} else if (result = /^([A-Ga-g][+#-]?)([0-9]*[.]*)/.exec(mmlString)) {
-			var pitch = result[1].toLowerCase().replace(/#/g,'+');
+			var noteName = result[1].toLowerCase().replace(/#/g,'+');
 			var duration = result[2];
 			if (!duration)
 				duration = state.duration;
@@ -153,7 +148,7 @@ function parseMml(mmlString) {
 			}
 			tokens.push({
 				type: 'note',
-				pitch: noteNameToMidiPitch(pitch, state.octave),
+				pitch: noteNameToMidiPitch(noteName, state.octave),
 				ticks: noteDurationToTicks(duration),
 				volume: state.volume
 			});
@@ -168,6 +163,15 @@ function parseMml(mmlString) {
 			tokens.push({
 				type: 'rest',
 				ticks: noteDurationToTicks(duration)
+			});
+			tokenLength = result[0].length;
+		} else if (result = /^[Nn]([0-9]+)/.exec(mmlString)) {
+			var pitch = parseInt(result[1], 10);
+			tokens.push({
+				type: 'note',
+				pitch: pitch,
+				ticks: noteDurationToTicks(state.duration),
+				volume: state.volume
 			});
 			tokenLength = result[0].length;
 		} else if (result = /^[Ll]([0-9]+[.]*)/.exec(mmlString)) {
