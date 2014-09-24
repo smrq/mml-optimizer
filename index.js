@@ -158,6 +158,18 @@ function parseMml(mmlString) {
 				volume: state.volume
 			});
 			tokenLength = result[0].length;
+		} else if (result = /^[Rr]([0-9]*[.]*)/.exec(mmlString)) {
+			var duration = result[1];
+			if (!duration)
+				duration = state.duration;
+			else if (/^[.]+$/.test(duration)) {
+				duration = state.duration + duration;
+			}
+			tokens.push({
+				type: 'rest',
+				ticks: noteDurationToTicks(duration)
+			});
+			tokenLength = result[0].length;
 		} else if (result = /^[Ll]([0-9]+[.]*)/.exec(mmlString)) {
 			state.duration = result[1];
 			tokenLength = result[0].length;
@@ -200,6 +212,7 @@ function parseMml(mmlString) {
 function tokenText(token, state) {
 	switch (token.type) {
 		case 'note': return noteText(token.pitch, token.ticks, state.octave, state.duration);
+		case 'rest': return restText(token.ticks, state.duration);
 		case 'duration': return durationText(token.duration);
 		case 'octave': return octaveText(token.octave, state.octave);
 		case 'volume': return volumeText(token.volume);
@@ -212,6 +225,10 @@ function tokenText(token, state) {
 
 function noteText(pitch, ticks, currentOctave, currentDuration) {
 	return midiPitchToNoteName(pitch, currentOctave) + relativeDuration(ticks, currentDuration);
+}
+
+function restText(ticks, currentDuration) {
+	return 'r' + relativeDuration(ticks, currentDuration);
 }
 
 function durationText(duration) {
@@ -256,6 +273,18 @@ function tokenNeighbors(token, state) {
 				}
 			});
 			break;
+		case 'rest':
+			neighbors.push(extend({}, state, { cursor: state.cursor + 1 }));
+			if (token.ticks !== noteDurationToTicks(state.duration)) {
+				ticksToAllNoteDurations(token.ticks)
+					.forEach(function (duration) {
+						neighbors.push(extend({}, state, { duration: duration }));
+						while (duration[duration.length-1] === '.') {
+							duration = duration.slice(0,-1);
+							neighbors.push(extend({}, state, { duration: duration }));
+						}
+					});
+			}
 		case 'volume':
 		case 'tempo':
 		case 'tie':
@@ -266,7 +295,7 @@ function tokenNeighbors(token, state) {
 	return neighbors;
 }
 
-function runPathfinder(mmlTokens) {
+function findPath(mmlTokens) {
 	var result = aStar({
 		start: extend({}, defaultState, { cursor: 0 }),
 		isEnd: function (node) {
@@ -285,11 +314,6 @@ function runPathfinder(mmlTokens) {
 			throw new Error('Unexpected node transition.');
 		},
 		heuristic: function (node) {
-			//var cost = mmlTokens
-			//	.slice(node.cursor)
-			//	.reduce(function (acc, value) {
-			//		return acc + tokenText(value, node.ticks).length;
-			//	}, 0);
 			return mmlTokens.length - node.cursor;
 		},
 		hash: function (node) {
@@ -302,7 +326,7 @@ function runPathfinder(mmlTokens) {
 }
 
 function optimizeTokens(mmlTokens) {
-	var path = runPathfinder(mmlTokens);
+	var path = findPath(mmlTokens);
 	var optimizedTokens = [];
 	for (var i = 1; i < path.length; ++i) {
 		if (path[i].cursor !== path[i-1].cursor)
@@ -321,8 +345,10 @@ function generateMml(tokens) {
 	return tokens.reduce(function (acc, token) {
 		return extend(acc, {
 			text: acc.text + tokenText(token, acc),
-			duration: token.type === 'duration' ? token.duration : acc.duration,
-			octave: token.type === 'octave' ? token.octave : acc.octave
+			octave: token.type === 'octave' ? token.octave : acc.octave,
+			tempo: token.type === 'tempo' ? token.tempo : acc.tempo,
+			volume: token.type === 'volume' ? token.volume : acc.volume,
+			duration: token.type === 'duration' ? token.duration : acc.duration
 		});
 	}, extend({}, defaultState, { text: '' })).text;
 }
@@ -350,6 +376,6 @@ module.exports.noteNameToMidiPitch = noteNameToMidiPitch;
 module.exports.validOctaves = validOctaves;
 module.exports.midiPitchToNoteName = midiPitchToNoteName;
 module.exports.parseMml = parseMml;
-module.exports.runPathfinder = runPathfinder;
+module.exports.findPath = findPath;
 module.exports.optimizeTokens = optimizeTokens;
 module.exports.generateMml = generateMml;

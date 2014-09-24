@@ -188,6 +188,24 @@ describe('parseMml', function () {
 			{ type: 'note', pitch: 60, ticks: 1125, volume: 100 },
 			{ type: 'note', pitch: 60, ticks: 1687, volume: 100 }
 		]],
+		['r2r4r8r', [
+			{ type: 'rest', ticks: 1000 },
+			{ type: 'rest', ticks: 500 },
+			{ type: 'rest', ticks: 250 },
+			{ type: 'rest', ticks: 500 }
+		]],
+		['r2r2.r2..r2...', [
+			{ type: 'rest', ticks: 1000 },
+			{ type: 'rest', ticks: 1500 },
+			{ type: 'rest', ticks: 2250 },
+			{ type: 'rest', ticks: 3375 }
+		]],
+		['rr.r..r...', [
+			{ type: 'rest', ticks: 500 },
+			{ type: 'rest', ticks: 750 },
+			{ type: 'rest', ticks: 1125 },
+			{ type: 'rest', ticks: 1687 }
+		]],
 		['ccc /* this is a comment v64 */ ccc', [
 			{ type: 'note', pitch: 60, ticks: 500, volume: 100 },
 			{ type: 'note', pitch: 60, ticks: 500, volume: 100 },
@@ -209,6 +227,12 @@ describe('parseMml', function () {
 			{ type: 'note', pitch: 60, ticks: 500, volume: 100 },
 			{ type: 'note', pitch: 60, ticks: 250, volume: 100 },
 			{ type: 'note', pitch: 60, ticks: 250, volume: 100 }
+		]],
+		['rrL8rr', [
+			{ type: 'rest', ticks: 500 },
+			{ type: 'rest', ticks: 500 },
+			{ type: 'rest', ticks: 250 },
+			{ type: 'rest', ticks: 250 }
 		]],
 		['L2cc.c..c...', [
 			{ type: 'note', pitch: 60, ticks: 1000, volume: 100 },
@@ -263,8 +287,8 @@ describe('parseMml', function () {
 	]);
 });
 
-describe('runPathfinder', function () {
-	runCases('should find a path given an input token set', opt.runPathfinder, [
+describe('findPath', function () {
+	runCases('should find a path given an input token set', opt.findPath, [
 		[[opt.parseMml('cdef')], [
 			{ cursor: 0, octave: 5, tempo: 100, volume: 100, duration: '4' },
 			{ cursor: 1, octave: 5, tempo: 100, volume: 100, duration: '4' },
@@ -307,5 +331,6 @@ describe('mml-optimizer', function () {
 		['b>c<b>d', 'bb+b>d'], // or b>cc-d
 		['b>c>c<b<b>d', 'b>cb+bc-d'],
 		['O1c>>>c<<<c', 'O1cO4cO1c'],
+		['O1r>>>r<<<r>>>r', 'rrrr']
 	]);
 });
