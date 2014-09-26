@@ -1,5 +1,6 @@
 var opt = require('./index.js');
 var assert = require('chai').assert;
+var extend = require('extend');
 var fmt = require('simple-fmt');
 
 function runCases(text, fn, cases) {
@@ -124,78 +125,79 @@ describe('parseMml', function () {
 		defaultState: {
 			octave: 5,
 			tempo: 100,
-			volume: 100,
+			volume: 100/127,
 			duration: '4'
 		},
-		maxVolume: 127
+		maxVolume: 127,
+		tracksShareState: true
 	};
 	runCases('should parse {0}', opt.parseMml, [
 		[['ccc', options], [
-			{ type: 'note', pitch: 60, ticks: 500, volume: 100 },
-			{ type: 'note', pitch: 60, ticks: 500, volume: 100 },
-			{ type: 'note', pitch: 60, ticks: 500, volume: 100 }
+			{ type: 'note', pitch: 60, ticks: 500, volume: 100/127 },
+			{ type: 'note', pitch: 60, ticks: 500, volume: 100/127 },
+			{ type: 'note', pitch: 60, ticks: 500, volume: 100/127 }
 		]],
 		[['cdefgabCDEFGAB', options], [
-			{ type: 'note', pitch: 60, ticks: 500, volume: 100 },
-			{ type: 'note', pitch: 62, ticks: 500, volume: 100 },
-			{ type: 'note', pitch: 64, ticks: 500, volume: 100 },
-			{ type: 'note', pitch: 65, ticks: 500, volume: 100 },
-			{ type: 'note', pitch: 67, ticks: 500, volume: 100 },
-			{ type: 'note', pitch: 69, ticks: 500, volume: 100 },
-			{ type: 'note', pitch: 71, ticks: 500, volume: 100 },
-			{ type: 'note', pitch: 60, ticks: 500, volume: 100 },
-			{ type: 'note', pitch: 62, ticks: 500, volume: 100 },
-			{ type: 'note', pitch: 64, ticks: 500, volume: 100 },
-			{ type: 'note', pitch: 65, ticks: 500, volume: 100 },
-			{ type: 'note', pitch: 67, ticks: 500, volume: 100 },
-			{ type: 'note', pitch: 69, ticks: 500, volume: 100 },
-			{ type: 'note', pitch: 71, ticks: 500, volume: 100 },
+			{ type: 'note', pitch: 60, ticks: 500, volume: 100/127 },
+			{ type: 'note', pitch: 62, ticks: 500, volume: 100/127 },
+			{ type: 'note', pitch: 64, ticks: 500, volume: 100/127 },
+			{ type: 'note', pitch: 65, ticks: 500, volume: 100/127 },
+			{ type: 'note', pitch: 67, ticks: 500, volume: 100/127 },
+			{ type: 'note', pitch: 69, ticks: 500, volume: 100/127 },
+			{ type: 'note', pitch: 71, ticks: 500, volume: 100/127 },
+			{ type: 'note', pitch: 60, ticks: 500, volume: 100/127 },
+			{ type: 'note', pitch: 62, ticks: 500, volume: 100/127 },
+			{ type: 'note', pitch: 64, ticks: 500, volume: 100/127 },
+			{ type: 'note', pitch: 65, ticks: 500, volume: 100/127 },
+			{ type: 'note', pitch: 67, ticks: 500, volume: 100/127 },
+			{ type: 'note', pitch: 69, ticks: 500, volume: 100/127 },
+			{ type: 'note', pitch: 71, ticks: 500, volume: 100/127 },
 		]],
 		[['c#d#e#f#g#a#b#c+d+e+f+g+a+b+c-d-e-f-g-a-b-', options], [
-			{ type: 'note', pitch: 61, ticks: 500, volume: 100 },
-			{ type: 'note', pitch: 63, ticks: 500, volume: 100 },
-			{ type: 'note', pitch: 65, ticks: 500, volume: 100 },
-			{ type: 'note', pitch: 66, ticks: 500, volume: 100 },
-			{ type: 'note', pitch: 68, ticks: 500, volume: 100 },
-			{ type: 'note', pitch: 70, ticks: 500, volume: 100 },
-			{ type: 'note', pitch: 72, ticks: 500, volume: 100 },
-			{ type: 'note', pitch: 61, ticks: 500, volume: 100 },
-			{ type: 'note', pitch: 63, ticks: 500, volume: 100 },
-			{ type: 'note', pitch: 65, ticks: 500, volume: 100 },
-			{ type: 'note', pitch: 66, ticks: 500, volume: 100 },
-			{ type: 'note', pitch: 68, ticks: 500, volume: 100 },
-			{ type: 'note', pitch: 70, ticks: 500, volume: 100 },
-			{ type: 'note', pitch: 72, ticks: 500, volume: 100 },
-			{ type: 'note', pitch: 59, ticks: 500, volume: 100 },
-			{ type: 'note', pitch: 61, ticks: 500, volume: 100 },
-			{ type: 'note', pitch: 63, ticks: 500, volume: 100 },
-			{ type: 'note', pitch: 64, ticks: 500, volume: 100 },
-			{ type: 'note', pitch: 66, ticks: 500, volume: 100 },
-			{ type: 'note', pitch: 68, ticks: 500, volume: 100 },
-			{ type: 'note', pitch: 70, ticks: 500, volume: 100 }
+			{ type: 'note', pitch: 61, ticks: 500, volume: 100/127 },
+			{ type: 'note', pitch: 63, ticks: 500, volume: 100/127 },
+			{ type: 'note', pitch: 65, ticks: 500, volume: 100/127 },
+			{ type: 'note', pitch: 66, ticks: 500, volume: 100/127 },
+			{ type: 'note', pitch: 68, ticks: 500, volume: 100/127 },
+			{ type: 'note', pitch: 70, ticks: 500, volume: 100/127 },
+			{ type: 'note', pitch: 72, ticks: 500, volume: 100/127 },
+			{ type: 'note', pitch: 61, ticks: 500, volume: 100/127 },
+			{ type: 'note', pitch: 63, ticks: 500, volume: 100/127 },
+			{ type: 'note', pitch: 65, ticks: 500, volume: 100/127 },
+			{ type: 'note', pitch: 66, ticks: 500, volume: 100/127 },
+			{ type: 'note', pitch: 68, ticks: 500, volume: 100/127 },
+			{ type: 'note', pitch: 70, ticks: 500, volume: 100/127 },
+			{ type: 'note', pitch: 72, ticks: 500, volume: 100/127 },
+			{ type: 'note', pitch: 59, ticks: 500, volume: 100/127 },
+			{ type: 'note', pitch: 61, ticks: 500, volume: 100/127 },
+			{ type: 'note', pitch: 63, ticks: 500, volume: 100/127 },
+			{ type: 'note', pitch: 64, ticks: 500, volume: 100/127 },
+			{ type: 'note', pitch: 66, ticks: 500, volume: 100/127 },
+			{ type: 'note', pitch: 68, ticks: 500, volume: 100/127 },
+			{ type: 'note', pitch: 70, ticks: 500, volume: 100/127 }
 		]],
 		[['c2c4c8c', options], [
-			{ type: 'note', pitch: 60, ticks: 1000, volume: 100 },
-			{ type: 'note', pitch: 60, ticks: 500, volume: 100 },
-			{ type: 'note', pitch: 60, ticks: 250, volume: 100 },
-			{ type: 'note', pitch: 60, ticks: 500, volume: 100 }
+			{ type: 'note', pitch: 60, ticks: 1000, volume: 100/127 },
+			{ type: 'note', pitch: 60, ticks: 500, volume: 100/127 },
+			{ type: 'note', pitch: 60, ticks: 250, volume: 100/127 },
+			{ type: 'note', pitch: 60, ticks: 500, volume: 100/127 }
 		]],
 		[['c2c2.c2..c2...', options], [
-			{ type: 'note', pitch: 60, ticks: 1000, volume: 100 },
-			{ type: 'note', pitch: 60, ticks: 1500, volume: 100 },
-			{ type: 'note', pitch: 60, ticks: 2250, volume: 100 },
-			{ type: 'note', pitch: 60, ticks: 3375, volume: 100 }
+			{ type: 'note', pitch: 60, ticks: 1000, volume: 100/127 },
+			{ type: 'note', pitch: 60, ticks: 1500, volume: 100/127 },
+			{ type: 'note', pitch: 60, ticks: 2250, volume: 100/127 },
+			{ type: 'note', pitch: 60, ticks: 3375, volume: 100/127 }
 		]],
 		[['cc.c..c...', options], [
-			{ type: 'note', pitch: 60, ticks: 500, volume: 100 },
-			{ type: 'note', pitch: 60, ticks: 750, volume: 100 },
-			{ type: 'note', pitch: 60, ticks: 1125, volume: 100 },
-			{ type: 'note', pitch: 60, ticks: 1687, volume: 100 }
+			{ type: 'note', pitch: 60, ticks: 500, volume: 100/127 },
+			{ type: 'note', pitch: 60, ticks: 750, volume: 100/127 },
+			{ type: 'note', pitch: 60, ticks: 1125, volume: 100/127 },
+			{ type: 'note', pitch: 60, ticks: 1687, volume: 100/127 }
 		]],
 		[['n60n30n90', options], [
-			{ type: 'note', pitch: 60, ticks: 500, volume: 100 },
-			{ type: 'note', pitch: 30, ticks: 500, volume: 100 },
-			{ type: 'note', pitch: 90, ticks: 500, volume: 100 }
+			{ type: 'note', pitch: 60, ticks: 500, volume: 100/127 },
+			{ type: 'note', pitch: 30, ticks: 500, volume: 100/127 },
+			{ type: 'note', pitch: 90, ticks: 500, volume: 100/127 }
 		]],
 		[['r2r4r8r', options], [
 			{ type: 'rest', ticks: 1000 },
@@ -216,26 +218,26 @@ describe('parseMml', function () {
 			{ type: 'rest', ticks: 1687 }
 		]],
 		[['ccc /* this is a comment v64 */ ccc', options], [
-			{ type: 'note', pitch: 60, ticks: 500, volume: 100 },
-			{ type: 'note', pitch: 60, ticks: 500, volume: 100 },
-			{ type: 'note', pitch: 60, ticks: 500, volume: 100 },
-			{ type: 'note', pitch: 60, ticks: 500, volume: 100 },
-			{ type: 'note', pitch: 60, ticks: 500, volume: 100 },
-			{ type: 'note', pitch: 60, ticks: 500, volume: 100 }
+			{ type: 'note', pitch: 60, ticks: 500, volume: 100/127 },
+			{ type: 'note', pitch: 60, ticks: 500, volume: 100/127 },
+			{ type: 'note', pitch: 60, ticks: 500, volume: 100/127 },
+			{ type: 'note', pitch: 60, ticks: 500, volume: 100/127 },
+			{ type: 'note', pitch: 60, ticks: 500, volume: 100/127 },
+			{ type: 'note', pitch: 60, ticks: 500, volume: 100/127 }
 		]],
 		[['ccc /* this is a\nmulti line\r\ncomment v64 */ ccc', options], [
-			{ type: 'note', pitch: 60, ticks: 500, volume: 100 },
-			{ type: 'note', pitch: 60, ticks: 500, volume: 100 },
-			{ type: 'note', pitch: 60, ticks: 500, volume: 100 },
-			{ type: 'note', pitch: 60, ticks: 500, volume: 100 },
-			{ type: 'note', pitch: 60, ticks: 500, volume: 100 },
-			{ type: 'note', pitch: 60, ticks: 500, volume: 100 }
+			{ type: 'note', pitch: 60, ticks: 500, volume: 100/127 },
+			{ type: 'note', pitch: 60, ticks: 500, volume: 100/127 },
+			{ type: 'note', pitch: 60, ticks: 500, volume: 100/127 },
+			{ type: 'note', pitch: 60, ticks: 500, volume: 100/127 },
+			{ type: 'note', pitch: 60, ticks: 500, volume: 100/127 },
+			{ type: 'note', pitch: 60, ticks: 500, volume: 100/127 }
 		]],
 		[['ccL8cc', options], [
-			{ type: 'note', pitch: 60, ticks: 500, volume: 100 },
-			{ type: 'note', pitch: 60, ticks: 500, volume: 100 },
-			{ type: 'note', pitch: 60, ticks: 250, volume: 100 },
-			{ type: 'note', pitch: 60, ticks: 250, volume: 100 }
+			{ type: 'note', pitch: 60, ticks: 500, volume: 100/127 },
+			{ type: 'note', pitch: 60, ticks: 500, volume: 100/127 },
+			{ type: 'note', pitch: 60, ticks: 250, volume: 100/127 },
+			{ type: 'note', pitch: 60, ticks: 250, volume: 100/127 }
 		]],
 		[['rrL8rr', options], [
 			{ type: 'rest', ticks: 500 },
@@ -244,29 +246,29 @@ describe('parseMml', function () {
 			{ type: 'rest', ticks: 250 }
 		]],
 		[['L2cc.c..c...', options], [
-			{ type: 'note', pitch: 60, ticks: 1000, volume: 100 },
-			{ type: 'note', pitch: 60, ticks: 1500, volume: 100 },
-			{ type: 'note', pitch: 60, ticks: 2250, volume: 100 },
-			{ type: 'note', pitch: 60, ticks: 3375, volume: 100 }
+			{ type: 'note', pitch: 60, ticks: 1000, volume: 100/127 },
+			{ type: 'note', pitch: 60, ticks: 1500, volume: 100/127 },
+			{ type: 'note', pitch: 60, ticks: 2250, volume: 100/127 },
+			{ type: 'note', pitch: 60, ticks: 3375, volume: 100/127 }
 		]],
 		[['L4.cc.c..c...', options], [
-			{ type: 'note', pitch: 60, ticks: 750, volume: 100 },
-			{ type: 'note', pitch: 60, ticks: 1125, volume: 100 },
-			{ type: 'note', pitch: 60, ticks: 1687, volume: 100 },
-			{ type: 'note', pitch: 60, ticks: 2530, volume: 100 }
+			{ type: 'note', pitch: 60, ticks: 750, volume: 100/127 },
+			{ type: 'note', pitch: 60, ticks: 1125, volume: 100/127 },
+			{ type: 'note', pitch: 60, ticks: 1687, volume: 100/127 },
+			{ type: 'note', pitch: 60, ticks: 2530, volume: 100/127 }
 		]],
 		[['o2c>c>c<c<c', options], [
-			{ type: 'note', pitch: 24, ticks: 500, volume: 100 },
-			{ type: 'note', pitch: 36, ticks: 500, volume: 100 },
-			{ type: 'note', pitch: 48, ticks: 500, volume: 100 },
-			{ type: 'note', pitch: 36, ticks: 500, volume: 100 },
-			{ type: 'note', pitch: 24, ticks: 500, volume: 100 }
+			{ type: 'note', pitch: 24, ticks: 500, volume: 100/127 },
+			{ type: 'note', pitch: 36, ticks: 500, volume: 100/127 },
+			{ type: 'note', pitch: 48, ticks: 500, volume: 100/127 },
+			{ type: 'note', pitch: 36, ticks: 500, volume: 100/127 },
+			{ type: 'note', pitch: 24, ticks: 500, volume: 100/127 }
 		]],
 		[['t180ccc', options], [
 			{ type: 'tempo', tempo: 180 },
-			{ type: 'note', pitch: 60, ticks: 500, volume: 100 },
-			{ type: 'note', pitch: 60, ticks: 500, volume: 100 },
-			{ type: 'note', pitch: 60, ticks: 500, volume: 100 }
+			{ type: 'note', pitch: 60, ticks: 500, volume: 100/127 },
+			{ type: 'note', pitch: 60, ticks: 500, volume: 100/127 },
+			{ type: 'note', pitch: 60, ticks: 500, volume: 100/127 }
 		]],
 		[['v64ccc', options], [
 			{ type: 'volume', volume: 64/127 },
@@ -275,23 +277,32 @@ describe('parseMml', function () {
 			{ type: 'note', pitch: 60, ticks: 500, volume: 64/127 }
 		]],
 		[['c&c&c', options], [
-			{ type: 'note', pitch: 60, ticks: 500, volume: 100 },
+			{ type: 'note', pitch: 60, ticks: 500, volume: 100/127 },
 			{ type: 'tie' },
-			{ type: 'note', pitch: 60, ticks: 500, volume: 100 },
+			{ type: 'note', pitch: 60, ticks: 500, volume: 100/127 },
 			{ type: 'tie' },
-			{ type: 'note', pitch: 60, ticks: 500, volume: 100 }
+			{ type: 'note', pitch: 60, ticks: 500, volume: 100/127 }
 		]],
-		[['c,c,c', options], [
-			{ type: 'note', pitch: 60, ticks: 500, volume: 100 },
+		[['L8V64O1c,c,c', options], [
+			{ type: 'volume', volume: 64/127 },
+			{ type: 'note', pitch: 12, ticks: 250, volume: 64/127 },
 			{ type: 'nextVoice' },
-			{ type: 'note', pitch: 60, ticks: 500, volume: 100 },
+			{ type: 'note', pitch: 12, ticks: 250, volume: 64/127 },
 			{ type: 'nextVoice' },
-			{ type: 'note', pitch: 60, ticks: 500, volume: 100 }
+			{ type: 'note', pitch: 12, ticks: 250, volume: 64/127 }
+		]],
+		[['L8V64O1c,c,c', extend({}, options, { tracksShareState: false })], [
+			{ type: 'volume', volume: 64/127 },
+			{ type: 'note', pitch: 12, ticks: 250, volume: 64/127 },
+			{ type: 'nextVoice' },
+			{ type: 'note', pitch: 60, ticks: 500, volume: 100/127 },
+			{ type: 'nextVoice' },
+			{ type: 'note', pitch: 60, ticks: 500, volume: 100/127 }
 		]],
 		[['@#$ ccc !|/', options], [
-			{ type: 'note', pitch: 60, ticks: 500, volume: 100 },
-			{ type: 'note', pitch: 60, ticks: 500, volume: 100 },
-			{ type: 'note', pitch: 60, ticks: 500, volume: 100 }
+			{ type: 'note', pitch: 60, ticks: 500, volume: 100/127 },
+			{ type: 'note', pitch: 60, ticks: 500, volume: 100/127 },
+			{ type: 'note', pitch: 60, ticks: 500, volume: 100/127 }
 		]]
 	]);
 });
@@ -303,26 +314,26 @@ describe('findPath', function () {
 		defaultState: {
 			octave: 5,
 			tempo: 100,
-			volume: 100,
+			volume: 100/127,
 			duration: '4'
 		}
 	};
 	runCases('should find a path given an input token set', opt.findPath, [
 		[[opt.parseMml('cdef', options), options], [
-			{ cursor: 0, octave: 5, tempo: 100, volume: 100, duration: '4' },
-			{ cursor: 1, octave: 5, tempo: 100, volume: 100, duration: '4' },
-			{ cursor: 2, octave: 5, tempo: 100, volume: 100, duration: '4' },
-			{ cursor: 3, octave: 5, tempo: 100, volume: 100, duration: '4' },
-			{ cursor: 4, octave: 5, tempo: 100, volume: 100, duration: '4' }
+			{ cursor: 0, octave: 5, tempo: 100, volume: 100/127, duration: '4' },
+			{ cursor: 1, octave: 5, tempo: 100, volume: 100/127, duration: '4' },
+			{ cursor: 2, octave: 5, tempo: 100, volume: 100/127, duration: '4' },
+			{ cursor: 3, octave: 5, tempo: 100, volume: 100/127, duration: '4' },
+			{ cursor: 4, octave: 5, tempo: 100, volume: 100/127, duration: '4' }
 		]],
 		[[opt.parseMml('c16d16e32f32', options), options], [
-			{ cursor: 0, octave: 5, tempo: 100, volume: 100, duration: '4' },
-			{ cursor: 0, octave: 5, tempo: 100, volume: 100, duration: '16' },
-			{ cursor: 1, octave: 5, tempo: 100, volume: 100, duration: '16' },
-			{ cursor: 2, octave: 5, tempo: 100, volume: 100, duration: '16' },
-			{ cursor: 2, octave: 5, tempo: 100, volume: 100, duration: '32' },
-			{ cursor: 3, octave: 5, tempo: 100, volume: 100, duration: '32' },
-			{ cursor: 4, octave: 5, tempo: 100, volume: 100, duration: '32' }
+			{ cursor: 0, octave: 5, tempo: 100, volume: 100/127, duration: '4' },
+			{ cursor: 0, octave: 5, tempo: 100, volume: 100/127, duration: '16' },
+			{ cursor: 1, octave: 5, tempo: 100, volume: 100/127, duration: '16' },
+			{ cursor: 2, octave: 5, tempo: 100, volume: 100/127, duration: '16' },
+			{ cursor: 2, octave: 5, tempo: 100, volume: 100/127, duration: '32' },
+			{ cursor: 3, octave: 5, tempo: 100, volume: 100/127, duration: '32' },
+			{ cursor: 4, octave: 5, tempo: 100, volume: 100/127, duration: '32' }
 		]]
 	]);
 });

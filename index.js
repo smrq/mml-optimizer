@@ -207,6 +207,8 @@ function parseMml(mmlString, options) {
 			tokenLength = 1;
 		} else if (mmlString[0] === ',') {
 			tokens.push({ type: 'nextVoice' });
+			if (!options.tracksShareState)
+				state = extend({}, options.defaultState);
 			tokenLength = 1;
 		} else {
 			tokenLength = 1;
@@ -297,8 +299,12 @@ function tokenNeighbors(token, state, options) {
 		case 'volume':
 		case 'tempo':
 		case 'tie':
-		case 'nextVoice':
 			neighbors.push(extend({}, state, { cursor: state.cursor + 1 }));
+		case 'nextVoice':
+			if (options.tracksShareState)
+				neighbors.push(extend({}, state, { cursor: state.cursor + 1 }));
+			else
+				neighbors.push(extend({}, options.defaultState, { cursor: state.cursor + 1 }));
 			break;
 	}
 	return neighbors;
