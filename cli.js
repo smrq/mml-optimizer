@@ -13,7 +13,8 @@ program
 	.option('-o, --outfile [file]', 'set the filename for output (default: stdout)')
 	.option('-f, --format [format]', 'set the input and output MML format')
 	.option('-I, --infmt [format]', 'set the input MML format')
-	.option('-O, --outfmt [format]', 'set the output MML format');
+	.option('-O, --outfmt [format]', 'set the output MML format')
+	.option('-t, --transpose [steps]', 'transpose the input MML up this many steps');
 
 program.on('--help', function () {
 	console.log('  Supported formats:');
@@ -35,7 +36,8 @@ if (program.format && program.outfmt) {
 
 var options = {
 	input: program.format || program.infmt || 'aa',
-	output: program.format || program.outfmt || 'aa'
+	output: program.format || program.outfmt || 'aa',
+	transpose: parseInt(program.transpose, 10) || 0
 };
 
 if (program.infile) {
