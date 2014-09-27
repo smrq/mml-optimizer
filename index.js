@@ -153,7 +153,7 @@ function parseMml(mmlString, options) {
 			else if (/^[.]+$/.test(duration)) {
 				duration = state.duration + duration;
 			}
-			var pitch = noteNameToMidiPitch(noteName, state.octave);
+			var pitch = noteNameToMidiPitch(noteName, state.octave) + options.transpose;
 			var ticks = noteDurationToTicks(duration, options);
 			tokens.push({
 				type: 'note',
@@ -180,7 +180,7 @@ function parseMml(mmlString, options) {
 			state.time += ticks;
 			tokenLength = result[0].length;
 		} else if (result = /^[Nn]([0-9]+)/.exec(mmlString)) {
-			var pitch = parseInt(result[1], 10);
+			var pitch = parseInt(result[1], 10) + options.transpose;
 			var ticks = noteDurationToTicks(state.duration, options);
 			tokens.push({
 				type: 'note',
@@ -201,12 +201,20 @@ function parseMml(mmlString, options) {
 		} else if (result = /^[Vv]([0-9]+)/.exec(mmlString)) {
 			var volume = parseInt(result[1], 10) / options.maxVolume;
 			state.volume = volume;
-			tokens.push({ type: 'volume', volume: volume });
+			tokens.push({
+				type: 'volume',
+				volume: volume,
+				time: state.time
+			});
 			tokenLength = result[0].length;
 		} else if (result = /^[Tt]([0-9]+)/.exec(mmlString)) {
 			var tempo = parseInt(result[1], 10);
 			state.tempo = tempo;
-			tokens.push({ type: 'tempo', tempo: tempo });
+			tokens.push({
+				type: 'tempo',
+				tempo: tempo,
+				time: state.time
+			});
 			tokenLength = result[0].length;
 		} else if (mmlString[0] === '&') {
 			tokens.push({ type: 'tie' });
@@ -360,9 +368,17 @@ function optimizeTokens(mmlTokens, options) {
 		if (path[i].cursor !== path[i-1].cursor)
 			optimizedTokens.push(mmlTokens[path[i-1].cursor]);
 		else if (path[i].duration !== path[i-1].duration)
-			optimizedTokens.push({ type: 'duration', duration: path[i].duration });
+			optimizedTokens.push({
+				type: 'duration',
+				duration: path[i].duration,
+				time: mmlTokens[path[i].cursor].time
+			});
 		else if (path[i].octave !== path[i-1].octave)
-			optimizedTokens.push({ type: 'octave', octave: path[i].octave });
+			optimizedTokens.push({
+				type: 'octave',
+				octave: path[i].octave,
+				time: mmlTokens[path[i].cursor].time
+			});
 		else
 			throw new Error('Unexpected node transition.');
 	}
@@ -390,9 +406,10 @@ function getOptions(alias) {
 module.exports = function opt(input, options) {
 	options = options || {};
 	var outputOptions = getOptions(options.output);
-	var inputOptions = extend(getOptions(options.input), {
+	var inputOptions = extend({}, getOptions(options.input), {
 		tpqn: outputOptions.tpqn,
-		minimumNoteDuration: outputOptions.tpqn
+		minimumNoteDuration: outputOptions.tpqn,
+		transpose: options.transpose || 0
 	});
 	var parsed = parseMml(input, inputOptions);
 	var optimized = optimizeTokens(parsed, outputOptions);
