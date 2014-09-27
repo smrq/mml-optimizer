@@ -137,7 +137,7 @@ function midiPitchToNoteName(pitch, octave) {
 }
 
 function parseMml(mmlString, options) {
-	var state = extend({}, options.defaultState);
+	var state = extend({ time: 0 }, options.defaultState);
 	var tokens = [];
 
 	while (mmlString.length) {
@@ -153,12 +153,16 @@ function parseMml(mmlString, options) {
 			else if (/^[.]+$/.test(duration)) {
 				duration = state.duration + duration;
 			}
+			var pitch = noteNameToMidiPitch(noteName, state.octave);
+			var ticks = noteDurationToTicks(duration, options);
 			tokens.push({
 				type: 'note',
-				pitch: noteNameToMidiPitch(noteName, state.octave),
-				ticks: noteDurationToTicks(duration, options),
-				volume: state.volume
+				pitch: pitch,
+				ticks: ticks,
+				volume: state.volume,
+				time: state.time
 			});
+			state.time += ticks;
 			tokenLength = result[0].length;
 		} else if (result = /^[Rr]([0-9]*[.]*)/.exec(mmlString)) {
 			var duration = result[1];
@@ -167,19 +171,25 @@ function parseMml(mmlString, options) {
 			else if (/^[.]+$/.test(duration)) {
 				duration = state.duration + duration;
 			}
+			var ticks = noteDurationToTicks(duration, options);
 			tokens.push({
 				type: 'rest',
-				ticks: noteDurationToTicks(duration, options)
+				ticks: ticks,
+				time: state.time
 			});
+			state.time += ticks;
 			tokenLength = result[0].length;
 		} else if (result = /^[Nn]([0-9]+)/.exec(mmlString)) {
 			var pitch = parseInt(result[1], 10);
+			var ticks = noteDurationToTicks(state.duration, options);
 			tokens.push({
 				type: 'note',
 				pitch: pitch,
-				ticks: noteDurationToTicks(state.duration, options),
-				volume: state.volume
+				ticks: ticks,
+				volume: state.volume,
+				time: state.time
 			});
+			state.time += ticks;
 			tokenLength = result[0].length;
 		} else if (result = /^[Ll]([0-9]+[.]*)/.exec(mmlString)) {
 			state.duration = result[1];
@@ -211,6 +221,7 @@ function parseMml(mmlString, options) {
 			tokens.push({ type: 'nextVoice' });
 			if (!options.tracksShareState)
 				state = extend({}, options.defaultState);
+			state.time = 0;
 			tokenLength = 1;
 		} else {
 			tokenLength = 1;
