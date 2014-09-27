@@ -13,20 +13,22 @@ var optionAliases = {
 		},
 		maxVolume: 15,
 		supportsNoteNumbers: true,
-		tracksShareState: false
+		tracksShareState: false,
+		octaveOffset: 0
 	},
 	'aa': {
 		tpqn: 500,
 		minimumNoteDuration: 64,
 		defaultState: {
-			octave: 5,
-			tempo: 100,
+			octave: 4,
+			tempo: 120,
 			volume: 100/127,
 			duration: '4'
 		},
 		maxVolume: 127,
 		supportsNoteNumbers: false,
-		tracksShareState: true
+		tracksShareState: true,
+		octaveOffset: -1
 	}
 }
 var defaultOptions = optionAliases['aa'];
@@ -183,7 +185,7 @@ function parseMml(mmlString, options) {
 			state.duration = result[1];
 			tokenLength = result[0].length;
 		} else if (result = /^[Oo]([0-9]+)/.exec(mmlString)) {
-			var octave = parseInt(result[1], 10);
+			var octave = parseInt(result[1], 10) + options.octaveOffset;
 			state.octave = octave;
 			tokenLength = result[0].length;
 		} else if (result = /^[Vv]([0-9]+)/.exec(mmlString)) {
@@ -225,7 +227,7 @@ function tokenText(token, state, options) {
 		case 'note': return noteText(token.pitch, token.ticks, state.octave, state.duration, options);
 		case 'rest': return restText(token.ticks, state.duration, options);
 		case 'duration': return durationText(token.duration);
-		case 'octave': return octaveText(token.octave, state.octave);
+		case 'octave': return octaveText(token.octave, state.octave, options);
 		case 'volume': return volumeText(token.volume, options);
 		case 'tempo': return tempoText(token.tempo);
 		case 'tie': return '&';
@@ -246,12 +248,12 @@ function durationText(duration) {
 	return 'L' + duration;
 }
 
-function octaveText(octave, currentOctave) {
+function octaveText(octave, currentOctave, options) {
 	if (currentOctave - octave === 1)
 		return '<';
 	if (currentOctave - octave === -1)
 		return '>';
-	return 'O' + octave;
+	return 'O' + (octave - options.octaveOffset);
 }
 
 function volumeText(volume, options) {
@@ -325,7 +327,7 @@ function findPath(mmlTokens, options) {
 			if (nodeA.duration !== nodeB.duration)
 				return durationText(nodeB.duration).length;
 			if (nodeA.octave !== nodeB.octave)
-				return octaveText(nodeB.octave, nodeA.octave).length;
+				return octaveText(nodeB.octave, nodeA.octave, options).length;
 			throw new Error('Unexpected node transition.');
 		},
 		heuristic: function (node) {
