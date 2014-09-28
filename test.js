@@ -1,4 +1,6 @@
-var opt = require('./index.js');
+var opt = require('./index');
+var core = require('./optimizer-core');
+
 var assert = require('chai').assert;
 var extend = require('extend');
 var fmt = require('simple-fmt');
@@ -16,7 +18,7 @@ function runCases(text, fn, cases) {
 
 describe('noteDurationToTicks', function () {
 	var options = { tpqn: 500 };
-	runCases('should convert {0} to {1}', opt.noteDurationToTicks, [
+	runCases('should convert {0} to {1}', core.noteDurationToTicks, [
 		[['1', options], 2000],
 		[['1.', options], 3000],
 		[['1..', options], 4500],
@@ -36,7 +38,7 @@ describe('noteDurationToTicks', function () {
 
 describe('ticksToAllNoteDurations', function () {
 	var options = { tpqn: 500, minimumNoteDuration: 64 };
-	runCases('should convert {0} to {1}', opt.ticksToAllNoteDurations, [
+	runCases('should convert {0} to {1}', core.ticksToAllNoteDurations, [
 		[[31, options], ['64']],
 		[[46, options], ['43', '64.']],
 		[[61, options], ['48.']],
@@ -60,10 +62,10 @@ describe('ticksToAllNoteDurations', function () {
 	it('should convert ticks to duration and back', function () {
 		for (var i = 1; i <= 64; ++i) {
 			for (var dots = ''; dots.length < 3; dots += '.') {
-				var ticks = opt.noteDurationToTicks(i + dots, options);
-				var durations = opt.ticksToAllNoteDurations(ticks, options);
+				var ticks = core.noteDurationToTicks(i + dots, options);
+				var durations = core.ticksToAllNoteDurations(ticks, options);
 				durations.forEach(function (duration) {
-					assert.equal(opt.noteDurationToTicks(duration, options),
+					assert.equal(core.noteDurationToTicks(duration, options),
 						ticks,
 						'Testing ' + i + dots);
 				});
@@ -74,22 +76,22 @@ describe('ticksToAllNoteDurations', function () {
 
 describe('relativeDuration', function () {
 	var options = { tpqn: 500, minimumNoteDuration: 64 };
-	runCases('should convert {0} to {1}', opt.relativeDuration, [
-		[[opt.noteDurationToTicks('4', options), '1', options], '4'],
-		[[opt.noteDurationToTicks('4', options), '4', options], ''],
-		[[opt.noteDurationToTicks('4', options), '4.', options], '4'],
-		[[opt.noteDurationToTicks('4.', options), '4', options], '.'],
-		[[opt.noteDurationToTicks('4..', options), '4.', options], '.'],
-		[[opt.noteDurationToTicks('4...', options), '4.', options], '..'],
-		[[opt.noteDurationToTicks('4....', options), '4.', options], '...'],
-		[[opt.noteDurationToTicks('12', options), '12', options], ''],
-		[[opt.noteDurationToTicks('12', options), '18', options], '.'],
-		[[opt.noteDurationToTicks('12', options), '27', options], '12']
+	runCases('should convert {0} to {1}', core.relativeDuration, [
+		[[core.noteDurationToTicks('4', options), '1', options], '4'],
+		[[core.noteDurationToTicks('4', options), '4', options], ''],
+		[[core.noteDurationToTicks('4', options), '4.', options], '4'],
+		[[core.noteDurationToTicks('4.', options), '4', options], '.'],
+		[[core.noteDurationToTicks('4..', options), '4.', options], '.'],
+		[[core.noteDurationToTicks('4...', options), '4.', options], '..'],
+		[[core.noteDurationToTicks('4....', options), '4.', options], '...'],
+		[[core.noteDurationToTicks('12', options), '12', options], ''],
+		[[core.noteDurationToTicks('12', options), '18', options], '.'],
+		[[core.noteDurationToTicks('12', options), '27', options], '12']
 	]);
 });
 
 describe('noteNameToMidiPitch', function () {
-	runCases('should convert {0} to {1}', opt.noteNameToMidiPitch, [
+	runCases('should convert {0} to {1}', core.noteNameToMidiPitch, [
 		[['c', 5], 60],
 		[['c+', 5], 61],
 		[['c-', 5], 59],
@@ -99,16 +101,16 @@ describe('noteNameToMidiPitch', function () {
 });
 
 describe('validOctaves', function () {
-	runCases('should convert {0} to {1}', opt.validOctaves, [
-		[opt.noteNameToMidiPitch('g', 4), [4]],
-		[opt.noteNameToMidiPitch('c', 4), [3, 4]],
-		[opt.noteNameToMidiPitch('b', 4), [4, 5]],
-		[opt.noteNameToMidiPitch('c', 0), [0]]
+	runCases('should convert {0} to {1}', core.validOctaves, [
+		[core.noteNameToMidiPitch('g', 4), [4]],
+		[core.noteNameToMidiPitch('c', 4), [3, 4]],
+		[core.noteNameToMidiPitch('b', 4), [4, 5]],
+		[core.noteNameToMidiPitch('c', 0), [0]]
 	]);
 });
 
 describe('midiPitchToNoteName', function () {
-	runCases('should convert {0} to {1}', opt.midiPitchToNoteName, [
+	runCases('should convert {0} to {1}', core.midiPitchToNoteName, [
 		[[67, 5], 'g'],
 		[[68, 5], 'g+'],
 		[[60, 5], 'c'],
@@ -133,7 +135,7 @@ describe('parseMml', function () {
 		octaveOffset: -1,
 		transpose: 1
 	};
-	runCases('should parse {0}', opt.parseMml, [
+	runCases('should parse {0}', core.parseMml, [
 		[['ccc', options], [
 			{ type: 'note', pitch: 49, ticks: 500, volume: 100/127, time: 0 },
 			{ type: 'note', pitch: 49, ticks: 500, volume: 100/127, time: 500 },
@@ -321,15 +323,15 @@ describe('findPath', function () {
 		},
 		transpose: 0
 	};
-	runCases('should find a path given an input token set', opt.findPath, [
-		[[opt.parseMml('cdef', options), options], [
+	runCases('should find a path given an input token set', core.findPath, [
+		[[core.parseMml('cdef', options), options], [
 			{ cursor: 0, octave: 4, tempo: 120, volume: 100/127, duration: '4' },
 			{ cursor: 1, octave: 4, tempo: 120, volume: 100/127, duration: '4' },
 			{ cursor: 2, octave: 4, tempo: 120, volume: 100/127, duration: '4' },
 			{ cursor: 3, octave: 4, tempo: 120, volume: 100/127, duration: '4' },
 			{ cursor: 4, octave: 4, tempo: 120, volume: 100/127, duration: '4' }
 		]],
-		[[opt.parseMml('c16d16e32f32', options), options], [
+		[[core.parseMml('c16d16e32f32', options), options], [
 			{ cursor: 0, octave: 4, tempo: 120, volume: 100/127, duration: '4' },
 			{ cursor: 0, octave: 4, tempo: 120, volume: 100/127, duration: '16' },
 			{ cursor: 1, octave: 4, tempo: 120, volume: 100/127, duration: '16' },
@@ -353,14 +355,14 @@ describe('optimizeTokens', function () {
 		},
 		transpose: 0
 	};
-	runCases('should return an optimized token set', opt.optimizeTokens, [
-		[[opt.parseMml('cdef', options), options], [
+	runCases('should return an optimized token set', core.optimizeTokens, [
+		[[core.parseMml('cdef', options), options], [
 			{ type: 'note', pitch: 48, ticks: 500, volume: 100/127, time: 0 },
 			{ type: 'note', pitch: 50, ticks: 500, volume: 100/127, time: 500 },
 			{ type: 'note', pitch: 52, ticks: 500, volume: 100/127, time: 1000 },
 			{ type: 'note', pitch: 53, ticks: 500, volume: 100/127, time: 1500 }
 		]],
-		[[opt.parseMml('c16d16e32f32', options), options], [
+		[[core.parseMml('c16d16e32f32', options), options], [
 			{ type: 'duration', duration: '16', time: 0 },
 			{ type: 'note', pitch: 48, ticks: 125, volume: 100/127, time: 0 },
 			{ type: 'note', pitch: 50, ticks: 125, volume: 100/127, time: 125 },
