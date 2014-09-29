@@ -39,7 +39,7 @@ function getOptions(alias) {
 	return optionAliases[alias] || defaultOptions;
 }
 
-module.exports = function opt(input, options) {
+function parse(mml, options) {
 	options = options || {};
 	var outputOptions = getOptions(options.output);
 	var inputOptions = extend({}, getOptions(options.input), {
@@ -47,9 +47,22 @@ module.exports = function opt(input, options) {
 		minimumNoteDuration: outputOptions.tpqn,
 		transpose: options.transpose || 0
 	});
-	var parsed = core.parseMml(input, inputOptions);
-	var optimized = core.optimizeTokens(parsed, outputOptions);
-	var generated = core.generateMml(optimized, outputOptions);
+	var parsed = core.parseMml(mml, inputOptions);
+	return parsed;
+}
 
+function generate(tokens, options) {
+	options = options || {};
+	var outputOptions = getOptions(options.output);
+	var optimized = core.optimizeTokens(tokens, outputOptions);
+	var generated = core.generateMml(optimized, outputOptions);
+	return generated;
+}
+
+module.exports = function opt(mml, options) {
+	var parsed = parse(mml, options);
+	var generated = generate(parsed, options);
 	return generated;
 };
+module.exports.parse = parse;
+module.exports.generate = generate;
