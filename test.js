@@ -406,7 +406,36 @@ describe('mml-optimizer', function () {
 		assert.equal(opt('V15O3g3.', { input: 'mabi', output: 'mabi' }), 'V15<g2');
 		assert.equal(opt('V15O3g3.', { input: 'aa', output: 'mabi' }), 'V2O2g2');
 		assert.equal(opt('V15O3g3.', { input: 'mabi', output: 'aa' }), 'V127<g3.');
+	});
+
+	it('should handle the maxVolume option', function () {
+		assert.equal(opt('V15g', { input: 'aa', output: 'aa' }), 'V15g');
+		assert.equal(opt('V15g', { input: 'mabi', output: 'mabi' }), 'V15g');
+		assert.equal(opt('V15g', { input: 'aa', output: 'mabi' }), 'V2g');
+		assert.equal(opt('V15g', { input: 'mabi', output: 'aa' }), 'V127g');
+	});
+
+	it('should handle the octaveOffset option', function () {
+		assert.equal(opt('O3g', { input: 'aa', output: 'aa' }), 'O3g');
+		assert.equal(opt('O3g', { input: 'mabi', output: 'mabi' }), '<g');
+		assert.equal(opt('O3g', { input: 'aa', output: 'mabi' }), 'O2g');
+		assert.equal(opt('O3g', { input: 'mabi', output: 'aa' }), '<g');
+	});
+
+	it('should handle the tpqn option', function () {
+		assert.equal(opt('g3.', { input: 'aa', output: 'aa' }), 'g3.');
+		assert.equal(opt('g3.', { input: 'mabi', output: 'mabi' }), 'g2');
+		assert.equal(opt('g3.', { input: 'aa', output: 'mabi' }), 'g2');
+		assert.equal(opt('g3.', { input: 'mabi', output: 'aa' }), 'g3.');
+	});
+
+	it('should handle transposition', function () {
 		assert.equal(opt('V15O3g3.', { input: 'aa', output: 'aa', transpose: 3 }), 'V15O3a+3.');
 		assert.equal(opt('V15O3g3.', { input: 'aa', output: 'aa', transpose: 12 }), 'V15<g3.');
+	});
+
+	it('should handle the noLiteralDottedRests option', function () {
+		assert.equal(opt('r8.', { input: 'mabi', output: 'mabi' }), 'r8.');
+		assert.equal(opt('r8.', { input: 'mabi', output: 'aa' }), 'L8.r');
 	});
 });

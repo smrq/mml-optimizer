@@ -14,7 +14,8 @@ var optionAliases = {
 		maxVolume: 15,
 		supportsNoteNumbers: true,
 		tracksShareState: false,
-		octaveOffset: 0
+		octaveOffset: 0,
+		noLiteralDottedRests: false
 	},
 	'aa': {
 		tpqn: 500,
@@ -28,7 +29,8 @@ var optionAliases = {
 		maxVolume: 127,
 		supportsNoteNumbers: false,
 		tracksShareState: true,
-		octaveOffset: -1
+		octaveOffset: -1,
+		noLiteralDottedRests: true
 	}
 }
 var defaultOptions = optionAliases['aa'];
@@ -64,5 +66,6 @@ module.exports = function opt(mml, options) {
 	var generated = generate(parsed, options);
 	return generated;
 };
+module.exports.getOptions = getOptions;
 module.exports.parse = parse;
 module.exports.generate = generate;

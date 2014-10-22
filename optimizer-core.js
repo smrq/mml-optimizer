@@ -274,8 +274,11 @@ function tokenNeighbors(token, state, options) {
 			});
 			break;
 		case 'rest':
-			neighbors.push(extend({}, state, { cursor: state.cursor + 1 }));
-			if (token.ticks !== noteDurationToTicks(state.duration, options)) {
+			var isSameAsCurrentDuration = token.ticks === noteDurationToTicks(state.duration, options);
+			if (isSameAsCurrentDuration || !options.noLiteralDottedRests) {
+				neighbors.push(extend({}, state, { cursor: state.cursor + 1 }));
+			}
+			if (!isSameAsCurrentDuration) {
 				ticksToAllNoteDurations(token.ticks, options)
 					.forEach(function (duration) {
 						neighbors.push(extend({}, state, { duration: duration }));
@@ -285,10 +288,12 @@ function tokenNeighbors(token, state, options) {
 						}
 					});
 			}
+			break;
 		case 'volume':
 		case 'tempo':
 		case 'tie':
 			neighbors.push(extend({}, state, { cursor: state.cursor + 1 }));
+			break;
 		case 'nextVoice':
 			if (options.tracksShareState)
 				neighbors.push(extend({}, state, { cursor: state.cursor + 1 }));
