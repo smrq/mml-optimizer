@@ -8,7 +8,7 @@ var optionAliases = {
 		defaultState: {
 			octave: 4,
 			tempo: 120,
-			volume: 8/15,
+			volume: [8,15],
 			duration: '4'
 		},
 		maxVolume: 15,
@@ -23,7 +23,7 @@ var optionAliases = {
 		defaultState: {
 			octave: 4,
 			tempo: 120,
-			volume: 100/127,
+			volume: [100,127],
 			duration: '4'
 		},
 		maxVolume: 127,

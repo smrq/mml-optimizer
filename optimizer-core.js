@@ -167,7 +167,7 @@ function parseMml(mmlString, options) {
 			state.octave = octave;
 			tokenLength = result[0].length;
 		} else if (result = /^[Vv]([0-9]+)/.exec(mmlString)) {
-			var volume = parseInt(result[1], 10) / options.maxVolume;
+			var volume = [parseInt(result[1], 10), options.maxVolume];
 			state.volume = volume;
 			tokens.push({
 				type: 'volume',
@@ -244,7 +244,7 @@ function octaveText(octave, currentOctave, options) {
 }
 
 function volumeText(volume, options) {
-	return 'V' + Math.round(volume * options.maxVolume);
+	return 'V' + Math.round(volume[0] * options.maxVolume / volume[1]);
 }
 
 function tempoText(tempo) {
