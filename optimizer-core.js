@@ -275,7 +275,9 @@ function tokenNeighbors(token, state, options) {
 			break;
 		case 'rest':
 			var isSameAsCurrentDuration = token.ticks === noteDurationToTicks(state.duration, options);
-			if (isSameAsCurrentDuration || !options.noLiteralDottedRests) {
+			if (isSameAsCurrentDuration ||
+				!options.noLiteralDottedRests ||
+				relativeDuration(token.ticks, state.duration, options).slice(-1) !== '.') {
 				neighbors.push(extend({}, state, { cursor: state.cursor + 1 }));
 			}
 			if (!isSameAsCurrentDuration) {

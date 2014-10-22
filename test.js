@@ -437,5 +437,6 @@ describe('mml-optimizer', function () {
 	it('should handle the noLiteralDottedRests option', function () {
 		assert.equal(opt('r8.', { input: 'mabi', output: 'mabi' }), 'r8.');
 		assert.equal(opt('r8.', { input: 'mabi', output: 'aa' }), 'L8.r');
+		assert.equal(opt('r8', { input: 'mabi', output: 'aa' }), 'r8');
 	});
 });
