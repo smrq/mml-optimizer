@@ -213,10 +213,10 @@ function tokenText(token, state, options) {
 	switch (token.type) {
 		case 'note': return noteText(token.pitch, token.ticks, state.octave, state.duration, options);
 		case 'rest': return restText(token.ticks, state.duration, options);
-		case 'duration': return durationText(token.duration);
+		case 'duration': return durationText(token.duration, state.duration);
 		case 'octave': return octaveText(token.octave, state.octave, options);
-		case 'volume': return volumeText(token.volume, options);
-		case 'tempo': return tempoText(token.tempo);
+		case 'volume': return volumeText(token.volume, state.volume, options);
+		case 'tempo': return tempoText(token.tempo, state.tempo);
 		case 'tie': return '&';
 		case 'nextVoice': return ',';
 	}
@@ -231,11 +231,15 @@ function restText(ticks, currentDuration, options) {
 	return 'r' + relativeDuration(ticks, currentDuration, options);
 }
 
-function durationText(duration) {
+function durationText(duration, currentDuration) {
+	if (duration === currentDuration)
+		return '';
 	return 'L' + duration;
 }
 
 function octaveText(octave, currentOctave, options) {
+	if (currentOctave === octave)
+		return '';
 	if (currentOctave - octave === 1)
 		return '<';
 	if (currentOctave - octave === -1)
@@ -243,11 +247,19 @@ function octaveText(octave, currentOctave, options) {
 	return 'O' + (octave - options.octaveOffset);
 }
 
-function volumeText(volume, options) {
-	return 'V' + Math.round(volume[0] * options.maxVolume / volume[1]);
+function volumeText(volume, currentVolume, options) {
+	if (roundVolume(currentVolume) === roundVolume(volume))
+		return '';
+	return 'V' + roundVolume(volume);
+
+	function roundVolume(volume) {
+		return Math.round(volume[0] * options.maxVolume / volume[1]);
+	}
 }
 
-function tempoText(tempo) {
+function tempoText(tempo, currentTempo) {
+	if (currentTempo === tempo)
+		return '';
 	return 'T' + tempo;
 }
 

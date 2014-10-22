@@ -398,7 +398,11 @@ describe('mml-optimizer', function () {
 		['b>c>c<b<b>d', 'b>cb+bc-d'],
 		['O1c>>>c<<<c', 'O1cO4cO1c'],
 		['n12n48n12', 'O2cO5cO2c'],
-		['O1r>>>r<<<r>>>r', 'rrrr']
+		['O1r>>>r<<<r>>>r', 'rrrr'],
+		['V15V15V15c', 'V15c'],
+		['T60T60T60c', 'T60c'],
+		['O1O1O1c', 'O1c'],
+		['L8L8L8c', 'c8']
 	]);
 
 	it('should use custom options', function () {
