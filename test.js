@@ -443,4 +443,8 @@ describe('mml-optimizer', function () {
 		assert.equal(opt('r8.', { input: 'mabi', output: 'aa' }), 'L8.r');
 		assert.equal(opt('r8', { input: 'mabi', output: 'aa' }), 'r8');
 	});
+
+	it('should slightly fudge volume values to save a character', function () {
+		assert.equal(opt('V12g', { input: 'mabi', output: 'aa' }), 'V99g');
+	});
 });

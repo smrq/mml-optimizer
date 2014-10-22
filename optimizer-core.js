@@ -248,11 +248,20 @@ function octaveText(octave, currentOctave, options) {
 }
 
 function volumeText(volume, currentVolume, options) {
-	if (roundVolume(currentVolume) === roundVolume(volume))
-		return '';
-	return 'V' + roundVolume(volume);
+	var roundedVolume = round(volume);
 
-	function roundVolume(volume) {
+	if (round(currentVolume) === roundedVolume)
+		return '';
+
+	// fudge volume values that are barely over an extra character
+	// e.g. 12/15 with maxVolume = 127  -->  99/127 instead of 102/127
+	var fudgedVolume = Math.pow(10, roundedVolume.toString().length-1) - 1;
+	if (round([volume[0]-1, volume[1]]) < fudgedVolume)
+		return 'V' + fudgedVolume;
+
+	return 'V' + roundedVolume;
+
+	function round(volume) {
 		return Math.round(volume[0] * options.maxVolume / volume[1]);
 	}
 }
