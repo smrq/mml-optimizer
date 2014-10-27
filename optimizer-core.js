@@ -273,56 +273,58 @@ function tempoText(tempo, currentTempo) {
 }
 
 function tokenNeighbors(token, state, options) {
-	var neighbors = [];
 	switch (token.type) {
-		case 'note':
-			validOctaves(token.pitch).forEach(function (octave) {
-				if (octave === state.octave) {
-					neighbors.push(extend({}, state, { cursor: state.cursor + 1 }));
-					if (token.ticks !== noteDurationToTicks(state.duration, options)) {
-						ticksToAllNoteDurations(token.ticks, options)
-							.forEach(function (duration) {
-								neighbors.push(extend({}, state, { duration: duration }));
-								while (duration[duration.length-1] === '.') {
-									duration = duration.slice(0,-1);
-									neighbors.push(extend({}, state, { duration: duration }));
-								}
-							});
-					}
-				} else {
-					neighbors.push(extend({}, state, { octave: octave }));
-				}
-			});
-			break;
-		case 'rest':
-			var isSameAsCurrentDuration = token.ticks === noteDurationToTicks(state.duration, options);
-			if (isSameAsCurrentDuration ||
-				!options.noLiteralDottedRests ||
-				relativeDuration(token.ticks, state.duration, options).slice(-1) !== '.') {
-				neighbors.push(extend({}, state, { cursor: state.cursor + 1 }));
-			}
-			if (!isSameAsCurrentDuration) {
-				ticksToAllNoteDurations(token.ticks, options)
-					.forEach(function (duration) {
-						neighbors.push(extend({}, state, { duration: duration }));
-						while (duration[duration.length-1] === '.') {
-							duration = duration.slice(0,-1);
-							neighbors.push(extend({}, state, { duration: duration }));
-						}
-					});
-			}
-			break;
+		case 'note': return noteNeighbors(token, state, options);
+		case 'rest': return restNeighbors(token, state, options);
 		case 'volume':
 		case 'tempo':
 		case 'tie':
-			neighbors.push(extend({}, state, { cursor: state.cursor + 1 }));
-			break;
+			return [extend({}, state, { cursor: state.cursor + 1 })];
 		case 'nextVoice':
-			if (options.tracksShareState)
-				neighbors.push(extend({}, state, { cursor: state.cursor + 1 }));
-			else
-				neighbors.push(extend({}, options.defaultState, { cursor: state.cursor + 1 }));
-			break;
+			return options.tracksShareState ?
+				[extend({}, state, { cursor: state.cursor + 1 })] :
+				[extend({}, options.defaultState, { cursor: state.cursor + 1 })];
+	}
+}
+
+function noteNeighbors(token, state, options) {
+	var neighbors = [];
+	validOctaves(token.pitch).forEach(function (octave) {
+		if (octave === state.octave) {
+			neighbors.push(extend({}, state, { cursor: state.cursor + 1 }));
+			if (token.ticks !== noteDurationToTicks(state.duration, options)) {
+				ticksToAllNoteDurations(token.ticks, options).forEach(function (duration) {
+					neighbors.push(extend({}, state, { duration: duration }));
+					while (duration[duration.length-1] === '.') {
+						duration = duration.slice(0,-1);
+						neighbors.push(extend({}, state, { duration: duration }));
+					}
+				});
+			}
+		} else {
+			neighbors.push(extend({}, state, { octave: octave }));
+		}
+	});
+	return neighbors;
+}
+
+function restNeighbors(token, state, options) {
+	var neighbors = [];
+	var isSameAsCurrentDuration = token.ticks === noteDurationToTicks(state.duration, options);
+	if (isSameAsCurrentDuration ||
+		!options.noLiteralDottedRests ||
+		relativeDuration(token.ticks, state.duration, options).slice(-1) !== '.') {
+		neighbors.push(extend({}, state, { cursor: state.cursor + 1 }));
+	}
+	if (!isSameAsCurrentDuration) {
+		ticksToAllNoteDurations(token.ticks, options)
+			.forEach(function (duration) {
+				neighbors.push(extend({}, state, { duration: duration }));
+				while (duration[duration.length-1] === '.') {
+					duration = duration.slice(0,-1);
+					neighbors.push(extend({}, state, { duration: duration }));
+				}
+			});
 	}
 	return neighbors;
 }
@@ -361,19 +363,21 @@ function optimizeTokens(mmlTokens, options) {
 	var path = findPath(mmlTokens, options);
 	var optimizedTokens = [];
 	for (var i = 1; i < path.length; ++i) {
-		if (path[i].cursor !== path[i-1].cursor)
-			optimizedTokens.push(mmlTokens[path[i-1].cursor]);
-		else if (path[i].duration !== path[i-1].duration)
+		var nodeA = path[i-1];
+		var nodeB = path[i];
+		if (nodeA.cursor !== nodeB.cursor)
+			optimizedTokens.push(mmlTokens[nodeA.cursor]);
+		else if (nodeA.duration !== nodeB.duration)
 			optimizedTokens.push({
 				type: 'duration',
-				duration: path[i].duration,
-				time: mmlTokens[path[i].cursor].time
+				duration: nodeB.duration,
+				time: mmlTokens[nodeB.cursor].time
 			});
-		else if (path[i].octave !== path[i-1].octave)
+		else if (nodeA.octave !== nodeB.octave)
 			optimizedTokens.push({
 				type: 'octave',
-				octave: path[i].octave,
-				time: mmlTokens[path[i].cursor].time
+				octave: nodeB.octave,
+				time: mmlTokens[nodeB.cursor].time
 			});
 		else
 			throw new Error('Unexpected node transition.');
