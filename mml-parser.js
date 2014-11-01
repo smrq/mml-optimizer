@@ -193,15 +193,15 @@ function matchNextVoice(mmlString, state, options) {
 	};
 }
 
+var matchers = [
+	matchComment, matchNote, matchRest, matchPitchLiteral,
+	matchDuration, matchOctave, matchVolume, matchTempo,
+	matchTie, matchOctaveDown, matchOctaveUp, matchNextVoice
+];
+
 function parseMml(mmlString, options) {
 	var state = extend({ time: 0 }, options.defaultState);
 	var tokens = [];
-
-	var matchers = [
-		matchComment, matchNote, matchRest, matchPitchLiteral,
-		matchDuration, matchOctave, matchVolume, matchTempo,
-		matchTie, matchOctaveDown, matchOctaveUp, matchNextVoice
-	];
 
 	while (mmlString.length) {
 		for (var i = 0; i < matchers.length; ++i) {
