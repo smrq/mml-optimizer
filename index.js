@@ -1,4 +1,5 @@
 var core = require('./optimizer-core');
+var parser = require('./mml-parser');
 var extend = require('extend');
 
 var optionAliases = {
@@ -49,7 +50,7 @@ function parse(mml, options) {
 		minimumNoteDuration: outputOptions.tpqn,
 		transpose: options.transpose || 0
 	});
-	var parsed = core.parseMml(mml, inputOptions);
+	var parsed = parser(mml, inputOptions);
 	return parsed;
 }
 
