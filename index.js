@@ -3,7 +3,7 @@ var parser = require('./mml-parser');
 var extend = require('extend');
 
 var optionAliases = {
-	'mabi': {
+	mabi: {
 		tpqn: 96,
 		minimumNoteDuration: 64,
 		defaultState: {
@@ -18,7 +18,7 @@ var optionAliases = {
 		octaveOffset: 0,
 		noLiteralDottedRests: false
 	},
-	'aa': {
+	aa: {
 		tpqn: 500,
 		minimumNoteDuration: 64,
 		defaultState: {
@@ -33,8 +33,8 @@ var optionAliases = {
 		octaveOffset: -1,
 		noLiteralDottedRests: true
 	}
-}
-var defaultOptions = optionAliases['aa'];
+};
+var defaultOptions = optionAliases.aa;
 
 function getOptions(alias) {
 	if (!alias)
