@@ -243,6 +243,11 @@ describe('mml-parser', function () {
 			{ type: 'note', pitch: 49, ticks: 500, volume: [100,127], time: 2000 },
 			{ type: 'note', pitch: 49, ticks: 500, volume: [100,127], time: 2500 }
 		]],
+		[['/* cdef /* gabc */ ccc', options], [
+			{ type: 'note', pitch: 49, ticks: 500, volume: [100,127], time: 0 },
+			{ type: 'note', pitch: 49, ticks: 500, volume: [100,127], time: 500 },
+			{ type: 'note', pitch: 49, ticks: 500, volume: [100,127], time: 1000 }
+		]],
 		[['ccL8cc', options], [
 			{ type: 'note', pitch: 49, ticks: 500, volume: [100,127], time: 0 },
 			{ type: 'note', pitch: 49, ticks: 500, volume: [100,127], time: 500 },
