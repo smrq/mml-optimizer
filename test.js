@@ -346,6 +346,7 @@ describe('optimize', function () {
 				volume: [100,127],
 				duration: '4'
 			},
+			maxVolume: 127,
 			transpose: 0
 		};
 		runCases('should find a path given an input token set', optimize.findPath, [
@@ -378,6 +379,7 @@ describe('optimize', function () {
 				volume: [100,127],
 				duration: '4'
 			},
+			maxVolume: 127,
 			transpose: 0
 		};
 		runCases('should return an optimized token set', optimize, [
@@ -429,13 +431,6 @@ describe('mml-optimizer', function () {
 		['L8L8L8c', 'c8']
 	]);
 
-	it('should use custom options', function () {
-		assert.equal(opt('V15O3g3.', { input: 'aa', output: 'aa' }), 'V15O3g3.');
-		assert.equal(opt('V15O3g3.', { input: 'mabi', output: 'mabi' }), 'V15<g2');
-		assert.equal(opt('V15O3g3.', { input: 'aa', output: 'mabi' }), 'V2O2g2');
-		assert.equal(opt('V15O3g3.', { input: 'mabi', output: 'aa' }), 'V127<g3.');
-	});
-
 	it('should handle the maxVolume option', function () {
 		assert.equal(opt('V15g', { input: 'aa', output: 'aa' }), 'V15g');
 		assert.equal(opt('V15g', { input: 'mabi', output: 'mabi' }), 'V15g');
@@ -443,18 +438,25 @@ describe('mml-optimizer', function () {
 		assert.equal(opt('V15g', { input: 'mabi', output: 'aa' }), 'V127g');
 	});
 
+	it('should handle the default volume option', function () {
+		assert.equal(opt('g', { input: 'aa', output: 'aa' }), 'g');
+		assert.equal(opt('g', { input: 'mabi', output: 'mabi' }), 'g');
+		assert.equal(opt('g', { input: 'aa', output: 'mabi' }), 'V12g');
+		assert.equal(opt('g', { input: 'mabi', output: 'aa' }), 'V68g');
+	});
+
 	it('should handle the octaveOffset option', function () {
-		assert.equal(opt('O3g', { input: 'aa', output: 'aa' }), 'O3g');
-		assert.equal(opt('O3g', { input: 'mabi', output: 'mabi' }), '<g');
-		assert.equal(opt('O3g', { input: 'aa', output: 'mabi' }), 'O2g');
-		assert.equal(opt('O3g', { input: 'mabi', output: 'aa' }), '<g');
+		assert.equal(opt('V15O3g', { input: 'aa', output: 'aa' }), 'V15O3g');
+		assert.equal(opt('V15O3g', { input: 'mabi', output: 'mabi' }), 'V15<g');
+		assert.equal(opt('V15O3g', { input: 'aa', output: 'mabi' }), 'V2O2g');
+		assert.equal(opt('V15O3g', { input: 'mabi', output: 'aa' }), 'V127<g');
 	});
 
 	it('should handle the tpqn option', function () {
-		assert.equal(opt('g3.', { input: 'aa', output: 'aa' }), 'g3.');
-		assert.equal(opt('g3.', { input: 'mabi', output: 'mabi' }), 'g2');
-		assert.equal(opt('g3.', { input: 'aa', output: 'mabi' }), 'g2');
-		assert.equal(opt('g3.', { input: 'mabi', output: 'aa' }), 'g3.');
+		assert.equal(opt('V15g3.', { input: 'aa', output: 'aa' }), 'V15g3.');
+		assert.equal(opt('V15g3.', { input: 'mabi', output: 'mabi' }), 'V15g2');
+		assert.equal(opt('V15g3.', { input: 'aa', output: 'mabi' }), 'V2g2');
+		assert.equal(opt('V15g3.', { input: 'mabi', output: 'aa' }), 'V127g3.');
 	});
 
 	it('should handle transposition', function () {
