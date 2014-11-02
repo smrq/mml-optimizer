@@ -2,8 +2,8 @@
 
 var opt = require('./index');
 var convert = require('./lib/convert');
-var core = require('./lib/optimizer-core');
-var parser = require('./lib/mml-parser');
+var parse = require('./lib/parse');
+var optimize = require('./lib/optimize');
 
 var assert = require('chai').assert;
 var extend = require('extend');
@@ -126,7 +126,7 @@ describe('convert', function () {
 	});
 });
 
-describe('mml-parser', function () {
+describe('parse', function () {
 	var options = {
 		tpqn: 500,
 		minimumNoteDuration: 64,
@@ -141,7 +141,7 @@ describe('mml-parser', function () {
 		octaveOffset: -1,
 		transpose: 1
 	};
-	runCases('should parse {0}', parser, [
+	runCases('should parse {0}', parse, [
 		[['ccc', options], [
 			{ type: 'note', pitch: 49, ticks: 500, volume: [100,127], time: 0 },
 			{ type: 'note', pitch: 49, ticks: 500, volume: [100,127], time: 500 },
@@ -322,7 +322,7 @@ describe('mml-parser', function () {
 	]);
 });
 
-describe('optimizer-core', function () {
+describe('optimize', function () {
 	describe('findPath', function () {
 		var options = {
 			tpqn: 500,
@@ -335,15 +335,15 @@ describe('optimizer-core', function () {
 			},
 			transpose: 0
 		};
-		runCases('should find a path given an input token set', core.findPath, [
-			[[parser('cdef', options), options], [
+		runCases('should find a path given an input token set', optimize.findPath, [
+			[[parse('cdef', options), options], [
 				{ cursor: 0, octave: 4, tempo: 120, volume: [100,127], duration: '4' },
 				{ cursor: 1, octave: 4, tempo: 120, volume: [100,127], duration: '4' },
 				{ cursor: 2, octave: 4, tempo: 120, volume: [100,127], duration: '4' },
 				{ cursor: 3, octave: 4, tempo: 120, volume: [100,127], duration: '4' },
 				{ cursor: 4, octave: 4, tempo: 120, volume: [100,127], duration: '4' }
 			]],
-			[[parser('c16d16e32f32', options), options], [
+			[[parse('c16d16e32f32', options), options], [
 				{ cursor: 0, octave: 4, tempo: 120, volume: [100,127], duration: '4' },
 				{ cursor: 0, octave: 4, tempo: 120, volume: [100,127], duration: '16' },
 				{ cursor: 1, octave: 4, tempo: 120, volume: [100,127], duration: '16' },
@@ -355,7 +355,7 @@ describe('optimizer-core', function () {
 		]);
 	});
 
-	describe('optimizeTokens', function () {
+	describe('optimize', function () {
 		var options = {
 			tpqn: 500,
 			minimumNoteDuration: 64,
@@ -367,14 +367,14 @@ describe('optimizer-core', function () {
 			},
 			transpose: 0
 		};
-		runCases('should return an optimized token set', core.optimizeTokens, [
-			[[parser('cdef', options), options], [
+		runCases('should return an optimized token set', optimize, [
+			[[parse('cdef', options), options], [
 				{ type: 'note', pitch: 48, ticks: 500, volume: [100,127], time: 0 },
 				{ type: 'note', pitch: 50, ticks: 500, volume: [100,127], time: 500 },
 				{ type: 'note', pitch: 52, ticks: 500, volume: [100,127], time: 1000 },
 				{ type: 'note', pitch: 53, ticks: 500, volume: [100,127], time: 1500 }
 			]],
-			[[parser('c16d16e32f32', options), options], [
+			[[parse('c16d16e32f32', options), options], [
 				{ type: 'duration', duration: '16', time: 0 },
 				{ type: 'note', pitch: 48, ticks: 125, volume: [100,127], time: 0 },
 				{ type: 'note', pitch: 50, ticks: 125, volume: [100,127], time: 125 },
