@@ -251,32 +251,41 @@ describe('parse', function () {
 		[['ccL8cc', options], [
 			{ type: 'note', pitch: 49, ticks: 500, volume: [100,127], time: 0 },
 			{ type: 'note', pitch: 49, ticks: 500, volume: [100,127], time: 500 },
+			{ type: 'duration', duration: '8', time: 1000 },
 			{ type: 'note', pitch: 49, ticks: 250, volume: [100,127], time: 1000 },
 			{ type: 'note', pitch: 49, ticks: 250, volume: [100,127], time: 1250 }
 		]],
 		[['rrL8rr', options], [
 			{ type: 'rest', ticks: 500, time: 0 },
 			{ type: 'rest', ticks: 500, time: 500 },
+			{ type: 'duration', duration: '8', time: 1000 },
 			{ type: 'rest', ticks: 250, time: 1000 },
 			{ type: 'rest', ticks: 250, time: 1250 }
 		]],
 		[['L2cc.c..c...', options], [
+			{ type: 'duration', duration: '2', time: 0 },
 			{ type: 'note', pitch: 49, ticks: 1000, volume: [100,127], time: 0 },
 			{ type: 'note', pitch: 49, ticks: 1500, volume: [100,127], time: 1000 },
 			{ type: 'note', pitch: 49, ticks: 2250, volume: [100,127], time: 2500 },
 			{ type: 'note', pitch: 49, ticks: 3375, volume: [100,127], time: 4750 }
 		]],
 		[['L4.cc.c..c...', options], [
+			{ type: 'duration', duration: '4.', time: 0 },
 			{ type: 'note', pitch: 49, ticks: 750, volume: [100,127], time: 0 },
 			{ type: 'note', pitch: 49, ticks: 1125, volume: [100,127], time: 750 },
 			{ type: 'note', pitch: 49, ticks: 1687, volume: [100,127], time: 1875 },
 			{ type: 'note', pitch: 49, ticks: 2530, volume: [100,127], time: 3562 }
 		]],
 		[['o3c>c>c<c<c', options], [
+			{ type: 'octave', octave: 2, time: 0 },
 			{ type: 'note', pitch: 25, ticks: 500, volume: [100,127], time: 0 },
+			{ type: 'octave', octave: 3, time: 500 },
 			{ type: 'note', pitch: 37, ticks: 500, volume: [100,127], time: 500 },
+			{ type: 'octave', octave: 4, time: 1000 },
 			{ type: 'note', pitch: 49, ticks: 500, volume: [100,127], time: 1000 },
+			{ type: 'octave', octave: 3, time: 1500 },
 			{ type: 'note', pitch: 37, ticks: 500, volume: [100,127], time: 1500 },
+			{ type: 'octave', octave: 2, time: 2000 },
 			{ type: 'note', pitch: 25, ticks: 500, volume: [100,127], time: 2000 }
 		]],
 		[['t180ccc', options], [
@@ -299,7 +308,9 @@ describe('parse', function () {
 			{ type: 'note', pitch: 49, ticks: 500, volume: [100,127], time: 1000 }
 		]],
 		[['L8V64O2c,c,c', options], [
+			{ type: 'duration', duration: '8', time: 0 },
 			{ type: 'volume', volume: [64,127], time: 0 },
+			{ type: 'octave', octave: 1, time: 0 },
 			{ type: 'note', pitch: 13, ticks: 250, volume: [64,127], time: 0 },
 			{ type: 'nextVoice' },
 			{ type: 'note', pitch: 13, ticks: 250, volume: [64,127], time: 0 },
@@ -307,7 +318,9 @@ describe('parse', function () {
 			{ type: 'note', pitch: 13, ticks: 250, volume: [64,127], time: 0 }
 		]],
 		[['L8V64O2c,c,c', extend({}, options, { tracksShareState: false })], [
+			{ type: 'duration', duration: '8', time: 0 },
 			{ type: 'volume', volume: [64,127], time: 0 },
+			{ type: 'octave', octave: 1, time: 0 },
 			{ type: 'note', pitch: 13, ticks: 250, volume: [64,127], time: 0 },
 			{ type: 'nextVoice' },
 			{ type: 'note', pitch: 49, ticks: 500, volume: [100,127], time: 0 },
