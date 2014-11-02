@@ -1,9 +1,9 @@
 /* jshint mocha:true */
 
 var opt = require('./index');
-var convert = require('./convert');
-var core = require('./optimizer-core');
-var parser = require('./mml-parser');
+var convert = require('./lib/convert');
+var core = require('./lib/optimizer-core');
+var parser = require('./lib/mml-parser');
 
 var assert = require('chai').assert;
 var extend = require('extend');

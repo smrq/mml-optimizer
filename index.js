@@ -1,5 +1,5 @@
-var core = require('./optimizer-core');
-var parser = require('./mml-parser');
+var core = require('./lib/optimizer-core');
+var parser = require('./lib/mml-parser');
 var extend = require('extend');
 
 var optionAliases = {
