@@ -124,6 +124,15 @@ describe('convert', function () {
 			[[60, 4], 'b+']
 		]);
 	});
+
+	describe('roundVolume', function () {
+		runCases('should convert {0} to {1}', convert.roundVolume, [
+			[[[100, 127], {maxVolume: 127}], 100],
+			[[[100, 127], {maxVolume: 15}], 12],
+			[[[12, 15], {maxVolume: 15}], 12],
+			[[[12, 15], {maxVolume: 127}], 99],
+		]);
+	});
 });
 
 describe('parse', function () {
