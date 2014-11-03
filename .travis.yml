@@ -1,6 +1,9 @@
 language: node_js
 node_js:
 - '0.10'
+branches:
+  except:
+    - in-progress
 deploy:
   provider: npm
   email: smr.kyu@gmail.com
