@@ -473,12 +473,6 @@ describe('mml-optimizer', function () {
 		assert.equal(opt('V15O3g3.', { input: 'aa', output: 'aa', transpose: 12 }), 'V15<g3.');
 	});
 
-	it('should handle the noLiteralDottedRests option', function () {
-		assert.equal(opt('r8.', { input: 'mabi', output: 'mabi' }), 'r8.');
-		assert.equal(opt('r8.', { input: 'mabi', output: 'aa' }), 'L8.r');
-		assert.equal(opt('r8', { input: 'mabi', output: 'aa' }), 'r8');
-	});
-
 	it('should slightly fudge volume values to save a character', function () {
 		assert.equal(opt('V12g', { input: 'mabi', output: 'aa' }), 'V99g');
 	});

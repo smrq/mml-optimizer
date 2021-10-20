@@ -62,6 +62,6 @@ function run(mml) {
 			}
 		});
 	} else {
-		process.stdout.write(optimized);
+		process.stdout.write(optimized+"\n");
 	}
 }
