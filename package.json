@@ -1,6 +1,6 @@
 {
   "name": "mml-optimizer",
-  "version": "0.1.4",
+  "version": "0.2.0",
   "description": "Optimizer for Music Macro Language (MML)",
   "main": "index.js",
   "bin": "./cli.js",
