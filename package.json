@@ -1,5 +1,5 @@
 {
-  "name": "mmlopt",
+  "name": "mml-optimizer",
   "version": "0.1.4",
   "description": "Optimizer for Music Macro Language (MML)",
   "main": "index.js",
@@ -22,13 +22,13 @@
     "chai": "^1.9.1",
     "jshint": "^2.5.8",
     "jshint-stylish": "^1.0.0",
-    "mocha": "",
+    "mocha": "^1.21.4",
     "simple-fmt": "^0.1.0"
   },
   "dependencies": {
-    "a-star": "",
-    "commander": "^7.0.0",
-    "concat-stream": "",
-    "extend": ""
+    "a-star": "^0.2.0",
+    "commander": "^2.3.0",
+    "concat-stream": "^1.4.6",
+    "extend": "^2.0.0"
   }
 }
