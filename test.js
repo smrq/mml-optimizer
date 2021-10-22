@@ -413,67 +413,60 @@ describe('optimize', function () {
 describe('mml-optimizer', function () {
 	runCases('should convert {0} to {1}', opt, [
 		['c4d4e4f4', 'cdef'],
-		['c8c8c8c4c8c8c8', 'L8cccc4ccc'],
-		['c8c8c4c8c8', 'L8ccc4cc'],
+		['c8c8c8c4c8c8c8', 'l8cccc4ccc'],
+		['c8c8c4c8c8', 'l8ccc4cc'],
 		['c8c4c8c8', 'c8cc8c8'],
-		['c16c4c16c16', 'L16cc4cc'],
+		['c16c4c16c16', 'l16cc4cc'],
 		['c4c4.c4c4.', 'cc.cc.'],
 		['c4c4.c4.c4.c4', 'cc.c.c.c'],
-		['c4c4.c4.c4.c4.', 'cL4.cccc'],
+		['c4c4.c4.c4.c4.', 'cl4.cccc'],
 		['c4c4..c4c4..c4', 'cc..cc..c'],
 		['c4c4...c4c4...c4', 'cc...cc...c'],
-		['c4.c4..c4.c4..c4.', 'L4.cc.cc.c'],
-		['c4..c4...c4..c4...c4..', 'L4..cc.cc.c'],
-		['c30c30c30c30c30...','L30ccccc9'],
-		['c16.c16c16.c16c16.c16c16.c16', 'L16c.cc.cc.cc.c'],
-		['L18ccccccL12cc', 'L18ccccccc.c.'],
-		['c64c43c64c43', 'L64cc.cc.'],
-		['L64ccccc.c.c.c.', 'L64ccccL43cccc'],
-		['O4gO5gO4gO7gO6g', '<g>g<gO7g<g'],
+		['c4.c4..c4.c4..c4.', 'l4.cc.cc.c'],
+		['c4..c4...c4..c4...c4..', 'l4..cc.cc.c'],
+		['c30c30c30c30c30...','l30ccccc9'],
+		['c16.c16c16.c16c16.c16c16.c16', 'l16c.cc.cc.cc.c'],
+		['l18ccccccl12cc', 'l18ccccccc.c.'],
+		['c64c43c64c43', 'l64cc.cc.'],
+		['l64ccccc.c.c.c.', 'l64ccccl43cccc'],
+		['o4go5go4go7go6g', '<g>g<go7g<g'],
 		['b>c>c<b<b>d', 'b>cb+bc-d'],
-		['O1c>>>c<<<c', 'O1cO4cO1c'],
-		['n12n48n12', 'O2cO5cO2c'],
-		['O1r>>>r<<<r>>>r', 'rrrr'],
-		['V15V15V15c', 'V15c'],
-		['T60T60T60c', 'T60c'],
-		['O1O1O1c', 'O1c'],
-		['L8L8L8c', 'c8']
+		['o1c>>>c<<<c', 'o1co4co1c'],
+		['n12n48n12', 'o1co4co1c'],
+		['o1r>>>r<<<r>>>r', 'rrrr'],
+		['v15v15v15c', 'v15c'],
+		['t60t60t60c', 't60c'],
+		['o1o1o1c', 'o1c'],
+		['l8l8l8c', 'c8']
 	]);
 
 	it('should handle the maxVolume option', function () {
-		assert.equal(opt('V15g', { input: 'aa', output: 'aa' }), 'V15g');
-		assert.equal(opt('V15g', { input: 'mabi', output: 'mabi' }), 'V15g');
-		assert.equal(opt('V15g', { input: 'aa', output: 'mabi' }), 'V2g');
-		assert.equal(opt('V15g', { input: 'mabi', output: 'aa' }), 'V127g');
+		assert.equal(opt('v15o2g', { input: 'aa', output: 'aa' }), 'v15o2g');
+		assert.equal(opt('v15o2g', { input: 'mabi', output: 'mabi' }), 'v15o2g');
+		assert.equal(opt('v15o2g', { input: 'aa', output: 'mabi' }), 'v2o2g');
+		assert.equal(opt('v15o2g', { input: 'mabi', output: 'aa' }), 'v127o2g');
 	});
 
 	it('should handle the default volume option', function () {
-		assert.equal(opt('g', { input: 'aa', output: 'aa' }), 'g');
-		assert.equal(opt('g', { input: 'mabi', output: 'mabi' }), 'g');
-		assert.equal(opt('g', { input: 'aa', output: 'mabi' }), 'V12g');
-		assert.equal(opt('g', { input: 'mabi', output: 'aa' }), 'V68g');
-	});
-
-	it('should handle the octaveOffset option', function () {
-		assert.equal(opt('V15O3g', { input: 'aa', output: 'aa' }), 'V15O3g');
-		assert.equal(opt('V15O3g', { input: 'mabi', output: 'mabi' }), 'V15<g');
-		assert.equal(opt('V15O3g', { input: 'aa', output: 'mabi' }), 'V2O2g');
-		assert.equal(opt('V15O3g', { input: 'mabi', output: 'aa' }), 'V127<g');
+		assert.equal(opt('o2g', { input: 'aa', output: 'aa' }), 'o2g');
+		assert.equal(opt('o2g', { input: 'mabi', output: 'mabi' }), 'o2g');
+		assert.equal(opt('o2g', { input: 'aa', output: 'mabi' }), 'v12o2g');
+		assert.equal(opt('o2g', { input: 'mabi', output: 'aa' }), 'v68o2g');
 	});
 
 	it('should handle the tpqn option', function () {
-		assert.equal(opt('V15g3.', { input: 'aa', output: 'aa' }), 'V15g3.');
-		assert.equal(opt('V15g3.', { input: 'mabi', output: 'mabi' }), 'V15g2');
-		assert.equal(opt('V15g3.', { input: 'aa', output: 'mabi' }), 'V2g2');
-		assert.equal(opt('V15g3.', { input: 'mabi', output: 'aa' }), 'V127g3.');
+		assert.equal(opt('v15o2g3.', { input: 'aa', output: 'aa' }), 'v15o2g3.');
+		assert.equal(opt('v15o2g3.', { input: 'mabi', output: 'mabi' }), 'v15o2g2');
+		assert.equal(opt('v15o2g3.', { input: 'aa', output: 'mabi' }), 'v2o2g2');
+		assert.equal(opt('v15o2g3.', { input: 'mabi', output: 'aa' }), 'v127o2g3.');
 	});
 
 	it('should handle transposition', function () {
-		assert.equal(opt('V15O3g3.', { input: 'aa', output: 'aa', transpose: 3 }), 'V15O3a+3.');
-		assert.equal(opt('V15O3g3.', { input: 'aa', output: 'aa', transpose: 12 }), 'V15<g3.');
+		assert.equal(opt('v15o3g3.', { input: 'aa', output: 'aa', transpose: 3 }), 'v15o3a+3.');
+		assert.equal(opt('v15o3g3.', { input: 'aa', output: 'aa', transpose: 12 }), 'v15<g3.');
 	});
 
 	it('should slightly fudge volume values to save a character', function () {
-		assert.equal(opt('V12g', { input: 'mabi', output: 'aa' }), 'V99g');
+		assert.equal(opt('v12o2g', { input: 'mabi', output: 'aa' }), 'v99o2g');
 	});
 });
