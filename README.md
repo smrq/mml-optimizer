@@ -3,6 +3,7 @@
 Optimizer for [Music Macro Language (MML)](http://en.wikipedia.org/wiki/Music_Macro_Language)
 
 [![NPM version](https://badge.fury.io/js/mml-optimizer.png)](http://badge.fury.io/js/mml-optimizer)
+![Build status](https://github.com/smrq/mml-optimizer/actions/workflows/ci.yml/badge.svg)
 
 # example usage
 
