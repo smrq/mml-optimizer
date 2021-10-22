@@ -41,7 +41,7 @@ var options = {
 };
 
 if (program.infile) {
-	fs.readFile(program.infile, function (err, data) {
+	fs.readFile(program.infile, 'utf8', function (err, data) {
 		if (err) {
 			console.error(err);
 			process.exit(1);
@@ -49,13 +49,13 @@ if (program.infile) {
 		run(data);
 	});
 } else {
-	process.stdin.pipe(concat(run));
+	process.stdin.pipe(concat({ encoding: 'string' }, run));
 }
 
 function run(mml) {
 	var optimized = opt(mml, options);
 	if (program.outfile) {
-		fs.writeFile(program.outfile, optimized, function (err) {
+		fs.writeFile(program.outfile, optimized, 'utf8', function (err) {
 			if (err) {
 				console.error(err);
 				process.exit(1);
