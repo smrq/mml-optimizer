@@ -436,7 +436,8 @@ describe('mml-optimizer', function () {
 		['v15v15v15c', 'v15c'],
 		['t60t60t60c', 't60c'],
 		['o1o1o1c', 'o1c'],
-		['l8l8l8c', 'c8']
+		['l8l8l8c', 'c8'],
+		[['o1e4,<b4>c4d4e4', { input: 'mabi', output: 'mabi' }], 'o1e,c-cde']
 	]);
 
 	it('should handle the maxVolume option', function () {
